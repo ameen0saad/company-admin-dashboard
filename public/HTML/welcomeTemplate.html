@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en" style="margin: 0; padding: 0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome Email</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+      .header {
+        background-color: #0066cc;
+        color: white;
+        padding: 20px 30px;
+        text-align: center;
+      }
+      .header h1 {
+        margin: 0;
+      }
+      .content {
+        padding: 30px;
+      }
+      .button {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 25px;
+        background-color: #0066cc;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      .footer {
+        font-size: 12px;
+        text-align: center;
+        color: #999;
+        padding: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>Welcome to Our Company</h1>
+      </div>
+      <div class="content">
+        <p>Hi <strong>{{name}}</strong>,</p>
+
+        <p>
+          We’re excited to let you know that your account has been successfully
+          created.
+        </p>
+
+        <p>You can now access your dashboard from the button below:</p>
+
+        <a href="{{loginUrl}}" class="button">Login to Dashboard</a>
+
+        <p style="margin-top: 30px">
+          If you have any questions, feel free to contact the HR department.
+        </p>
+
+        <p>Welcome aboard! 🚀</p>
+      </div>
+      <div class="footer">
+        &copy; {{year}} Your Company. All rights reserved.
+      </div>
+    </div>
+  </body>
+</html>

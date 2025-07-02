@@ -1,0 +1,8 @@
+# ملف البيئة
+config.env
+
+# ملف قفل الحزم
+package-lock.json
+
+# مجلد الحزم
+node_modules/
