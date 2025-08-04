@@ -15,7 +15,7 @@ export const getMyTeam = async (req, res, next) => {
   const myTeam = await EmployeeProfile.find({
     department: employeeProfile.department,
     employeeId: { $ne: req.user._id },
-  });
+  }).select('-salary');
   res.status(200).json({
     status: 'success',
     results: myTeam.length,

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
+import EmployeeProfile from './employeeProfileModel.js';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -26,7 +27,6 @@ const userSchema = new mongoose.Schema({
   active: {
     type: Boolean,
     default: true,
-    select: false,
   },
   password: {
     type: String,
@@ -65,6 +65,14 @@ const userSchema = new mongoose.Schema({
   },
 });
 userSchema.index({ role: 1 });
+
+userSchema.pre(/^find/, function (next) {
+  if (!(this.getOptions && this.getOptions().skipInactiveFilter)) {
+    this.find({ active: { $ne: false } });
+  }
+  next();
+});
+
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -72,10 +80,7 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
-) {
+userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 

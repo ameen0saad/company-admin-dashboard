@@ -3,36 +3,97 @@ import EmployeeProfile from '../Model/employeeProfileModel.js';
 import User from '../Model/userModel.js';
 import * as factory from './handlerFactory.js';
 import AppError from '../utils/appError.js';
+import APIFeatures from '../utils/ApiFeatures.js';
+import { Email } from '../utils/email.js';
 
 export const getAllPayrolls = factory.getAll(Payroll);
 export const getPayroll = factory.getOne(Payroll);
-export const createPayroll = factory.createOne(Payroll);
+export const createPayroll = async (req, res, next) => {
+  delete req.body.createdBy;
+  req.body.createdBy = req.user._id;
+
+  const payroll = await Payroll.create(req.body);
+
+  await factory.logAudit({
+    action: 'create',
+    model: Payroll.modelName,
+    documentId: payroll._id,
+    user: req.user._id,
+  });
+
+  const employeeProfile = await EmployeeProfile.findById(req.body.employeeProfileId);
+  if (!employeeProfile) {
+    return next(new AppError('No Employee Profile found with that ID', 404));
+  }
+
+  const user = await User.findById(employeeProfile.employeeId);
+  if (!user) {
+    return next(new AppError('No User found for this Employee Profile', 404));
+  }
+
+  await new Email(user, null).sendPayroll(payroll, employeeProfile);
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      payroll,
+    },
+  });
+};
+
 export const updatePayroll = factory.updateOne(Payroll);
 export const deletePayroll = factory.deleteOne(Payroll);
+
+// TODO : get all payrolls for a specific employee
+export const getMyPayrolls = async (req, res, next) => {
+  const employeeProfile = await EmployeeProfile.findOne({
+    employeeId: req.user._id,
+  });
+  if (!employeeProfile) {
+    return next(new AppError('No Employee Profile found for this user', 404));
+  }
+  req.query.sort = '-year -month';
+  const features = new APIFeatures(
+    Payroll.find({ employeeProfileId: employeeProfile._id }).select('-createdBy -updatedBy -__v'),
+    req.query
+  )
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  const payrolls = await features.query;
+  if (!payrolls || payrolls.length === 0) {
+    return next(new AppError('No Payrolls found for this employee', 404));
+  }
+  res.status(200).json({
+    status: 'success',
+    results: payrolls.length,
+    data: {
+      payrolls,
+    },
+  });
+};
 
 export const preventHrSelfModification = async (req, res, next) => {
   let payroll;
   if (req.params.id) {
     payroll = await Payroll.findById(req.params.id);
-    if (!payroll) throw new AppError('No found Payroll with that ID : ', 400);
+    if (!payroll) return next(new AppError('No found Payroll with that ID : ', 400));
   }
   const employeeId =
-    req.body.employeeProfileId ||
-    req.params.employeeId ||
-    payroll.employeeProfileId;
+    req.body.employeeProfileId || req.params.employeeId || payroll.employeeProfileId;
 
   if (!employeeId) {
-    throw new AppError('No employee ID provided', 400);
+    return next(new AppError('No employee ID provided', 400));
   }
 
   const employeeProfile = await EmployeeProfile.findById(employeeId);
-  if (!employeeProfile)
-    throw new AppError('No Employee found with that ID  ', 400);
+  if (!employeeProfile) return next(new AppError('No Employee found with that ID  ', 400));
 
   const employeeRole = employeeProfile.employeeId.role;
 
   if (employeeRole == 'hr' && req.user.role === 'hr')
-    throw new AppError('HR cannot assign bonus or payroll to themselves', 403);
+    return next(new AppError('HR cannot assign bonus or payroll to themselves', 403));
 
   next();
 };

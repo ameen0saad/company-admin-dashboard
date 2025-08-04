@@ -41,13 +41,7 @@ export class Email {
     await this.newTransport().sendMail(mailOption);
   }
   async sendWelcome() {
-    const templatePath = path.join(
-      __dirname,
-      '..',
-      'public',
-      'HTML',
-      'welcomeTemplate.html'
-    );
+    const templatePath = path.join(__dirname, '..', 'public', 'HTML', 'welcomeTemplate.html');
     const htmlTemplate = fs
       .readFileSync(templatePath, 'utf-8')
       .replace('{{name}}', this.name)
@@ -56,22 +50,30 @@ export class Email {
     await this.send(htmlTemplate, 'Welecome to our Company');
   }
   async sendOTP(otp) {
-    const templatePath = path.join(
-      __dirname,
-      '..',
-      'public',
-      'HTML',
-      'otpTemplate.html'
-    );
+    const templatePath = path.join(__dirname, '..', 'public', 'HTML', 'otpTemplate.html');
     const htmlTemplate = fs
       .readFileSync(templatePath, 'utf-8')
       .replace('{{name}}', this.name)
       .replace('{{otp}}', otp)
       .replace('{{year}}', new Date().getFullYear());
 
-    await this.send(
-      htmlTemplate,
-      'Your OTP to reset password (valid for only 10 minutes)'
-    );
+    await this.send(htmlTemplate, 'Your OTP to reset password (valid for only 10 minutes)');
+  }
+  async sendPayroll(payroll, employeeProfile) {
+    const templatePath = path.join(__dirname, '..', 'public', 'HTML', 'payrollTemplate.html');
+    console.log(payroll.MonthName);
+    console.log(payroll.year);
+    const htmlTemplate = fs
+      .readFileSync(templatePath, 'utf-8')
+      .replace('{{employeeName}}', this.name)
+      .replaceAll('{{month}}', payroll.MonthName)
+      .replaceAll('{{year}}', payroll.year)
+      .replace('{{netPay}}', payroll.netPay.toFixed(2))
+      .replace('{{bonus}}', payroll.bonus.toFixed(2))
+      .replace('{{deductions}}', payroll.deductions.toFixed(2))
+      .replace('{{salary}}', employeeProfile.salary.toFixed(2))
+      .replace('{{paymentDate}}', payroll.paymentDate);
+
+    await this.send(htmlTemplate, 'Your Payroll for ' + payroll.MonthName);
   }
 }

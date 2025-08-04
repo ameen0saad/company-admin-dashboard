@@ -1,16 +1,12 @@
 import AppError from '../utils/appError.js';
 import APIFeatures from '../utils/ApiFeatures.js';
 import AuditLog from '../Model/auditLogModel.js';
+import User from '../Model/userModel.js';
+import EmployeeProfile from '../Model/employeeProfileModel.js';
+import { Email } from '../utils/email.js';
 
-const logAudit = async ({
-  action,
-  model,
-  documentId,
-  user,
-  before,
-  after,
-  changes,
-}) => {
+// TODO : Log audit trail for create, update, and delete operations
+export const logAudit = async ({ action, model, documentId, user, before, after, changes }) => {
   await AuditLog.create({
     action,
     model,
@@ -46,6 +42,7 @@ const getDiff = (oldDoc, reqBody) => {
 };
 
 export const getAll = (Model) => async (req, res, next) => {
+  console.log(req.query);
   const features = new APIFeatures(Model.find(), req.query)
     .filter()
     .sort()
@@ -65,7 +62,7 @@ export const getOne = (Model, popOptions) => async (req, res, next) => {
   let query = Model.findById(req.params.id);
   if (popOptions) query = query.populate(popOptions);
   const doc = await query;
-  if (!doc) throw new AppError('No document found with that ID', 404);
+  if (!doc) return next(new AppError('No document found with that ID', 404));
 
   res.status(200).json({
     status: 'success',
@@ -85,6 +82,7 @@ export const createOne = (Model) => async (req, res, next) => {
     documentId: doc._id,
     user: req.user._id,
   });
+
   res.status(201).json({
     status: 'success',
     data: {
@@ -99,13 +97,13 @@ export const updateOne = (Model) => async (req, res, next) => {
   if (req.file) {
     req.body.photo = req.file.filename;
   }
-  const oldDoc = await Model.findById(req.params.id);
+  const oldDoc = await Model.findById(req.params.id).setOptions({ skipInactiveFilter: true });
   const doc = await Model.findByIdAndUpdate(req.params.id, req.body, {
     runValidators: true,
     new: true,
   }).setOptions({ skipInactiveFilter: true });
 
-  if (!doc) throw new AppError('No document found with that ID', 404);
+  if (!doc) return next(new AppError('No document found with that ID', 404));
 
   const changes = getDiff(oldDoc, req.body);
 
@@ -128,7 +126,7 @@ export const updateOne = (Model) => async (req, res, next) => {
 
 export const deleteOne = (Model) => async (req, res, next) => {
   const doc = await Model.findByIdAndDelete(req.params.id);
-  if (!doc) throw new AppError('No document found with that ID', 404);
+  if (!doc) return next(new AppError('No document found with that ID', 404));
 
   await logAudit({
     action: 'delete',

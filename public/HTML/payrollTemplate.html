@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Payroll Statement</title>
+    <style>
+      body {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .header {
+        background: linear-gradient(135deg, #2c6fbb 0%, #4e73df 100%);
+        padding: 30px;
+        text-align: center;
+        border-radius: 8px 8px 0 0;
+      }
+      .content {
+        padding: 30px;
+        background-color: #ffffff;
+      }
+      .summary-box {
+        background-color: #f8fbff;
+        border-left: 4px solid #4e73df;
+        padding: 20px;
+        margin: 25px 0;
+        border-radius: 0 8px 8px 0;
+      }
+      .highlight {
+        color: #2c6fbb;
+        font-weight: 600;
+      }
+      .footer {
+        background-color: #2e4765;
+        color: white;
+        text-align: center;
+        padding: 20px;
+        border-radius: 0 0 8px 8px;
+      }
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      .data-table td {
+        padding: 12px 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .data-table tr:last-child td {
+        border-bottom: none;
+      }
+      .total-row {
+        font-weight: 700;
+        color: #2c6fbb;
+      }
+      .emoji {
+        font-size: 20px;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1 style="color: white; margin: 0">Your Payroll Statement</h1>
+        <p style="color: rgba(255, 255, 255, 0.8); margin: 5px 0 0">
+          {{month}} {{year}} Payment Details
+        </p>
+      </div>
+
+      <div class="content">
+        <p>Hello <span class="highlight">{{employeeName}}</span>,</p>
+        <p>
+          Your payroll details for <span class="highlight">{{month}} {{year}}</span> are now
+          available:
+        </p>
+
+        <div class="summary-box">
+          <table class="data-table">
+            <tr>
+              <td>Base Salary:</td>
+              <td style="text-align: right">${{salary}}</td>
+            </tr>
+            <tr>
+              <td>Bonus & Allowances:</td>
+              <td style="text-align: right; color: #27ae60">+${{bonus}}</td>
+            </tr>
+            <tr>
+              <td>Deductions:</td>
+              <td style="text-align: right; color: #e74c3c">-${{deductions}}</td>
+            </tr>
+            <tr class="total-row">
+              <td>TOTAL NET PAY:</td>
+              <td style="text-align: right; font-size: 18px">${{netPay}}</td>
+            </tr>
+          </table>
+        </div>
+
+        <p><span class="emoji">📅</span> <strong>Payment Date:</strong> {{paymentDate}}</p>
+        <p style="margin-top: 25px">
+          <span class="emoji">📎</span> Your detailed payslip is attached for your records.
+        </p>
+      </div>
+
+      <div class="footer">
+        <p style="margin: 5px 0">Need assistance with this statement?</p>
+        <p style="margin: 5px 0">Contact HR at hr@company.com or call (123) 456-7890</p>
+        <p style="margin: 15px 0 5px; font-size: 13px; color: rgba(255, 255, 255, 0.7)">
+          &copy; 2025 Your Company Name. All rights reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

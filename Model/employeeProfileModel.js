@@ -40,10 +40,6 @@ const employeeProfileSchema = new mongoose.Schema(
       type: Date,
       required: [true, 'Employee must have a  date of birth'],
     },
-    active: {
-      type: Boolean,
-      default: true,
-    },
     createdAt: {
       type: Date,
       default: Date.now(),
@@ -66,14 +62,12 @@ const employeeProfileSchema = new mongoose.Schema(
 employeeProfileSchema.index({ department: 1, active: 1 });
 
 employeeProfileSchema.pre(/^find/, function (next) {
-  if (!(this.getOptions && this.getOptions().skipInactiveFilter)) {
-    this.find({ active: { $ne: false } });
-  }
   this.populate({
     path: 'department',
     select: 'name',
   }).populate({
     path: 'employeeId',
+    match: { active: { $ne: false } },
     select: 'name email role photo',
   });
   next();
@@ -82,18 +76,17 @@ employeeProfileSchema.pre(/^find/, function (next) {
 employeeProfileSchema.post('save', async function () {
   const employeeCount = await EmployeeProfile.countDocuments({
     department: this.department,
-    active: true,
   });
   await Department.findByIdAndUpdate(this.department, {
     employeeCount,
   });
+  console.log(employeeCount);
 });
 
-employeeProfileSchema.post(/^findOne/, async function (doc) {
+employeeProfileSchema.post(['findOneAndUpdate', 'findOneAndDelete'], async function (doc) {
   if (!doc) return;
   const employeeCount = await EmployeeProfile.countDocuments({
     department: doc.department,
-    active: true,
   });
   await Department.findByIdAndUpdate(doc.department, {
     employeeCount,
@@ -116,15 +109,8 @@ employeeProfileSchema.pre('findOne', function () {
       path: 'updatedBy',
       select: 'name email role',
     },
-    {
-      path: 'Payrolls',
-      select: 'netPay bonus deductions',
-    },
   ]);
 });
 
-const EmployeeProfile = mongoose.model(
-  'EmployeeProfile',
-  employeeProfileSchema
-);
+const EmployeeProfile = mongoose.model('EmployeeProfile', employeeProfileSchema);
 export default EmployeeProfile;

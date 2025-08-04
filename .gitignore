@@ -1,8 +1,8 @@
-# ملف البيئة
+# .gitignore file for a Node.js project
 config.env
 
-# ملف قفل الحزم
+
 package-lock.json
 
-# مجلد الحزم
+
 node_modules/

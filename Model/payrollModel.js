@@ -23,11 +23,9 @@ const payrollSchema = new mongoose.Schema(
       default: Date.now,
     },
     month: {
-      type: String,
+      type: Number,
       default: function () {
-        return new Date(Date.now()).toLocaleString('default', {
-          month: 'long',
-        });
+        return new Date().getMonth() + 1;
       },
     },
     year: {
@@ -51,13 +49,13 @@ const payrollSchema = new mongoose.Schema(
   }
 );
 
-payrollSchema.index(
-  { employeeProfileId: 1, month: 1, year: 1 },
-  { unique: true }
-);
+payrollSchema.index({ employeeProfileId: 1, month: 1, year: 1 }, { unique: true });
 
 payrollSchema.index({ month: 1 });
 payrollSchema.index({ year: 1 });
+payrollSchema.virtual('MonthName').get(function () {
+  return new Date(2000, this.month - 1).toLocaleString('default', { month: 'long' });
+});
 
 payrollSchema.pre('save', async function (next) {
   const empProfile = await EmployeeProfile.findById(this.employeeProfileId);
@@ -73,6 +71,10 @@ payrollSchema.pre('findOne', function (next) {
     {
       path: 'updatedBy',
       select: 'name email role',
+    },
+    {
+      path: 'employeeProfileId',
+      select: 'name salary',
     },
   ]);
   next();
