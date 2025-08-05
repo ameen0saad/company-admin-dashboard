@@ -1,62 +1,109 @@
-# HR Management System
+# 🏢 HR Management System
 
-A full-featured backend application for managing employees, HR processes, and payroll with secure role-based access.
+## 🔍 Overview
 
-## Overview
+**HR Management System** is a full-featured backend application built using **Node.js**, **Express**, and **MongoDB**.  
+It helps companies manage employees, HR staff, payroll, and more with a secure, scalable, and production-ready RESTful API.
 
-The HR Management System is a robust backend solution built with Node.js, Express, and MongoDB. It provides companies with tools to manage their workforce, payroll, and HR operations through a secure API with role-based access control.
+This system includes authentication, authorization, audit logging, and rate limiting – ensuring high performance and security.
 
-## Features
+---
 
-### Authentication & Authorization
-- Secure signup/login system with rate limiting
+## 🚀 Features
+
+### 🔐 Authentication & Authorization
+- Signup/Login system with **rate limiting**
 - JWT-based authentication
-- Role-based access: Admin, HR, and Employee
+- **Role-based access control** for:
+  - `Admin`
+  - `HR`
+  - `Employee`
 
-### User Management
-- Admin creates employees and HR staff
-- Employee profiles with detailed information
-- HR and Admin can manage employee data
+---
 
-### Dashboard Statistics
-- Employee counts and payroll totals
-- Real-time data for management dashboards
+### 🧑‍💼 Employee Management
+- Admin can create HR and Employee accounts
+- Each employee has a full profile
+- HR and Admin can:
+  - View, update, and delete employees
+  - Manage HR staff
 
-### Payroll Processing
-- Monthly payroll records per employee
-- Support for bonuses and deductions
-- Automatic net pay calculation
+---
 
-### Audit Logging
-- Tracks critical changes (payroll updates, user deletions)
-- Records user responsible and timestamp for all changes
+### 📊 Dashboard Statistics
+- Overview of:
+  - Total employees
+  - Total payrolls
+  - Active/inactive employees
+- Real-time dashboard data fetching
 
-### Security Features
-- Admin has full system access
-- HR can manage employees and payroll
-- Employees view only their own data
-- API rate limiting on sensitive endpoints
+---
 
-## Technologies Used
+### 💸 Payroll Management
+- Add monthly payroll per employee
+- Includes:
+  - Bonus
+  - Deductions
+- Net pay is **automatically calculated**
+- Linked to each employee’s profile
 
-**Backend:**  
+---
+
+### 📚 Audit Logs
+- Track **who** made changes and **when**
+- Logged actions include:
+  - Creating/updating payroll
+  - Deleting users
+  - Updating sensitive info
+
+---
+
+### 🧾 Role-Based Access
+| Role     | Permissions                          |
+|----------|--------------------------------------|
+| Admin    | Full control over system             |
+| HR       | Manage employees and payroll         |
+| Employee | View their own profile and payroll   |
+
+---
+
+### 🌐 API Rate Limiting
+- **Login**: `5` requests per `15` minutes
+- **Forgot Password**: `3` requests per `hour`
+- Prevents brute-force and abuse
+
+---
+
+## 🛠️ Technologies Used
+
+### 💻 Backend
 - Node.js
-- Express.js
+- Express
 
-**Database:**  
-- MongoDB (with Mongoose ODM)
+### 🗃️ Database
+- MongoDB
+- Mongoose ODM
 
-**Security:**  
+### 🔐 Security
 - Helmet
 - express-rate-limit
-- bcryptjs
-- JSON Web Tokens
+- bcrypt for password hashing
+- JWT for token-based authentication
 
-**Other:**  
+### ✅ Validation
 - express-validator
-- Custom audit logging
-- Nodemon (dev)
-- Morgan (HTTP logging)
+
+### 📝 Logging
+- Custom audit logs middleware
+
+### 🧰 Dev Tools
+- Nodemon (live-reload during development)
+
+---
+
+
+
+## 🚀 Getting Started
 
 ## Installation
 
@@ -64,3 +111,53 @@ The HR Management System is a robust backend solution built with Node.js, Expres
 ```bash
 git clone https://github.com/ameen0saad/company-admin-dashboard.git
 cd company-admin-dashboard
+```
+## Install Dependencies
+```
+npm install
+```
+### 🛠️ Environment Variables (`.env`)
+```
+NODE_ENV=development
+PORT=3000
+
+# Database Configuration
+DATABASE=<your_mongodb_connection_string>
+DATABASE_PASSWORD=<your_database_password>
+
+# JWT Authentication
+JWT_SECRET=<your_secure_jwt_secret>
+JWT_EXPIRES_IN=90d
+JWT_COOKIE_EXPIRES_IN=90d
+
+# Email Service (Primary)
+EMAIL_HOST=<your_email_service_host>
+EMAIL_USER=<your_email_username>
+EMAIL_PASSWORD=<your_email_password>
+EMAIL_PORT=587
+EMAIL_FROM=Company@Gmail.com
+
+# Email Service (Turbo - Fallback)
+TURBO_EMAIL_HOST=<your_turbo_email_host>
+TURBO_USERNAME=<your_turbo_username>
+TURBO_PASSWORD=<your_turbo_password>
+```
+
+## 📡 API Endpoints
+
+### Auth
+- `POST /api/v1/auth/signup` – Admin creates HR or Employee
+- `POST /api/v1/auth/login` – Login (rate limited)
+
+### Employee
+- `GET /api/v1/employees` – Get all employees (Admin/HR only)
+- `GET /api/v1/employees/:id` – Get employee by ID
+- `PATCH /api/v1/employees/:id` – Update employee
+- `DELETE /api/v1/employees/:id` – Delete employee
+
+### Payroll
+- `POST /api/v1/payroll` – Add payroll for employee
+- `GET /api/v1/payroll/:employeeId` – Get payrolls by employee
+
+... and more.
+
