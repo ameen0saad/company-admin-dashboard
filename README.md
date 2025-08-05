@@ -143,21 +143,13 @@ TURBO_USERNAME=<your_turbo_username>
 TURBO_PASSWORD=<your_turbo_password>
 ```
 
-## 📡 API Endpoints
+📌 This project includes full REST API functionality for an HR Management System.
+- Admin, HR, and Employee roles
+- Authentication with rate limiting
+- Payroll management
+- Audit logs
+- And more...
 
-### Auth
-- `POST /api/v1/auth/signup` – Admin creates HR or Employee
-- `POST /api/v1/auth/login` – Login (rate limited)
+📬 Full API is available here → [Postman Docs](https://documenter.getpostman.com/view/31205716/2sB3BBpWib)
 
-### Employee
-- `GET /api/v1/employees` – Get all employees (Admin/HR only)
-- `GET /api/v1/employees/:id` – Get employee by ID
-- `PATCH /api/v1/employees/:id` – Update employee
-- `DELETE /api/v1/employees/:id` – Delete employee
-
-### Payroll
-- `POST /api/v1/payroll` – Add payroll for employee
-- `GET /api/v1/payroll/:employeeId` – Get payrolls by employee
-
-... and more.
 
