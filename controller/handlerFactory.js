@@ -42,7 +42,6 @@ const getDiff = (oldDoc, reqBody) => {
 };
 
 export const getAll = (Model) => async (req, res, next) => {
-  console.log(req.query);
   const features = new APIFeatures(Model.find(), req.query)
     .filter()
     .sort()
