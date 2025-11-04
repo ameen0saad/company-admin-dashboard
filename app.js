@@ -6,6 +6,7 @@ import hpp from 'hpp';
 import mongoSanitize from 'express-mongo-sanitize';
 import rateLimit from 'express-rate-limit';
 import xss from 'xss-clean';
+import path from 'path';
 
 import employeeRoutes from './routes/employeeRoutes.js';
 import department from './routes/departmentRoutes.js';
@@ -15,8 +16,15 @@ import auditRoutes from './routes/auditLogRoutes.js';
 import companyStatesRoutes from './routes/companyStatesRoutes.js';
 import globalErrorHandler from './controller/errorController.js';
 import AppError from './utils/appError.js';
+import { __dirname } from './utils/path.js';
 
 const app = express();
+app.use(
+  cors({
+    origin: ['http://localhost:5173', 'http://127.0.0.1:5500'],
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 app.use(helmet());
@@ -30,15 +38,9 @@ app.use(limiter);
 
 app.use(hpp({ whitelist: ['sort', 'page', 'limit'] }));
 
-app.use(mongoSanitize());
-app.use(xss());
+//app.use(mongoSanitize());
+// app.use(xss());
 
-app.use(
-  cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5500'],
-    credentials: true,
-  })
-);
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 app.use(express.static(path.join(__dirname, 'public')));

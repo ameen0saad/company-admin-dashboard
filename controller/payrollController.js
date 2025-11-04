@@ -52,10 +52,11 @@ export const getMyPayrolls = async (req, res, next) => {
   if (!employeeProfile) {
     return next(new AppError('No Employee Profile found for this user', 404));
   }
-  req.query.sort = '-year -month';
+  const queryObj = { ...req.query, sort: '-price' };
+
   const features = new APIFeatures(
     Payroll.find({ employeeProfileId: employeeProfile._id }).select('-createdBy -updatedBy -__v'),
-    req.query
+    queryObj
   )
     .filter()
     .sort()
