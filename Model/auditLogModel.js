@@ -27,15 +27,15 @@ const auditLogSchema = new mongoose.Schema({
     default: Date.now,
   },
   changes: {
-    type: mongoose.Schema.Types.Mixed, // Object with { key: {from, to} }
+    type: mongoose.Schema.Types.Mixed,
     default: null,
   },
 });
-auditLogSchema.pre('findOne', function (next) {
+auditLogSchema.pre(/^find/, function (next) {
   this.populate([
     {
       path: 'user',
-      select: 'name',
+      select: 'name role email photo',
     },
     {
       path: 'documentId',

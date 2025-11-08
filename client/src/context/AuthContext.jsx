@@ -22,10 +22,34 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
+    localStorage.removeItem('token');
   };
 
+  const hasRole = (roles) => {
+    if (!user) return false;
+    if (typeof roles === 'string') return user.role === roles;
+    return roles.includes(user.role);
+  };
+
+  const isAdmin = () => user?.role === 'admin';
+  const isHR = () => user?.role === 'hr';
+  const isEmployee = () => user?.role === 'employee';
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        hasRole,
+        isAdmin,
+        isHR,
+        isEmployee,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
   );
 };
 

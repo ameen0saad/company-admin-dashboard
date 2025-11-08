@@ -7,6 +7,10 @@ import EmployeesList from '../pages/EmployeesList';
 import PayrollList from '../pages/PayrollList';
 import DepartmentsList from '../pages/DepartmentsList';
 import AuditLogs from '../pages/AuditLogs';
+import MyTeam from '../pages/MyTeam';
+import MyProfile from '../pages/MyProfile';
+import UserManagement from '../pages/UserManagement';
+import UnassignedUsers from '../pages/UnassignedUsers';
 
 export default function Layout() {
   const { user } = useAuth();
@@ -25,6 +29,14 @@ export default function Layout() {
         return <DepartmentsList />;
       case 'audit':
         return <AuditLogs />;
+      case 'myTeam':
+        return <MyTeam />;
+      case 'myProfile':
+        return <MyProfile />;
+      case 'users':
+        return <UserManagement />;
+      case 'unassignedUsers':
+        return <UnassignedUsers />;
       default:
         return <Dashboard />;
     }

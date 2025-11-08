@@ -80,7 +80,6 @@ employeeProfileSchema.post('save', async function () {
   await Department.findByIdAndUpdate(this.department, {
     employeeCount,
   });
-  console.log(employeeCount);
 });
 
 employeeProfileSchema.post(['findOneAndUpdate', 'findOneAndDelete'], async function (doc) {

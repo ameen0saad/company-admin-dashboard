@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import fs from 'fs';
 import path from 'path';
-import { __dirname } from './path.js';
+import { __dirname } from '../path.js';
 
 export class Email {
   constructor(user, url) {
@@ -41,7 +41,7 @@ export class Email {
     await this.newTransport().sendMail(mailOption);
   }
   async sendWelcome() {
-    const templatePath = path.join(__dirname, '..', 'public', 'HTML', 'welcomeTemplate.html');
+    const templatePath = path.join(__dirname, 'public', 'HTML', 'welcomeTemplate.html');
     const htmlTemplate = fs
       .readFileSync(templatePath, 'utf-8')
       .replace('{{name}}', this.name)
@@ -50,7 +50,7 @@ export class Email {
     await this.send(htmlTemplate, 'Welecome to our Company');
   }
   async sendOTP(otp) {
-    const templatePath = path.join(__dirname, '..', 'public', 'HTML', 'otpTemplate.html');
+    const templatePath = path.join(__dirname, 'public', 'HTML', 'otpTemplate.html');
     const htmlTemplate = fs
       .readFileSync(templatePath, 'utf-8')
       .replace('{{name}}', this.name)
@@ -60,7 +60,7 @@ export class Email {
     await this.send(htmlTemplate, 'Your OTP to reset password (valid for only 10 minutes)');
   }
   async sendPayroll(payroll, employeeProfile) {
-    const templatePath = path.join(__dirname, '..', 'public', 'HTML', 'payrollTemplate.html');
+    const templatePath = path.join(__dirname, 'public', 'HTML', 'payrollTemplate.html');
     console.log(payroll.MonthName);
     console.log(payroll.year);
     const htmlTemplate = fs

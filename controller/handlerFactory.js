@@ -42,12 +42,13 @@ const getDiff = (oldDoc, reqBody) => {
 };
 
 export const getAll = (Model) => async (req, res, next) => {
-  const features = new APIFeatures(Model.find(), req.query)
+  const features = new APIFeatures(Model.find().sort(), req.query)
     .filter()
     .sort()
     .limitFields()
     .paginate();
   const doc = await features.query;
+
   res.status(200).json({
     status: 'success',
     results: doc.length,
@@ -62,7 +63,6 @@ export const getOne = (Model, popOptions) => async (req, res, next) => {
   if (popOptions) query = query.populate(popOptions);
   const doc = await query;
   if (!doc) return next(new AppError('No document found with that ID', 404));
-
   res.status(200).json({
     status: 'success',
     data: {

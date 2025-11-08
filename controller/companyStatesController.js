@@ -7,8 +7,6 @@ export const getStats = async (req, res, next) => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
   const currentYear = currentDate.getFullYear();
-  console.log('Current Month:', typeof currentMonth);
-  console.log('Current Year:', currentYear);
 
   const [
     employeesCount,
@@ -43,7 +41,6 @@ export const getStats = async (req, res, next) => {
     Department.find().select('name employeeCount ').sort({ employeeCount: -1 }),
   ]);
   const pay = Payroll.find({});
-  console.log('Payroll Stats:', payrollStats);
   res.status(200).json({
     status: 'success',
     data: {

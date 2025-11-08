@@ -1,11 +1,13 @@
 const API_BASE_URL = 'http://127.0.0.1:3000/api/v1';
 
-const apiService = {
+export const apiService = {
   async request(endpoint, options = {}) {
     const token = localStorage.getItem('token');
+    const isFormData = options.body instanceof FormData;
+
     const headers = {
-      'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
+      ...(!isFormData && { 'Content-Type': 'application/json' }), // <== مهم جدًا
       ...options.headers,
     };
 
@@ -15,10 +17,16 @@ const apiService = {
         headers,
       });
 
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
 
       if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        throw new Error(data?.message || 'Something went wrong');
       }
 
       return data;
@@ -191,7 +199,7 @@ const apiService = {
   // ==================== AUDIT LOGS ====================
 
   // Get all audit logs (Admin only)
-  getAuditLogs: (params = '') => apiService.request(`/audits${params}`),
+  getAuditLogs: (params = '?sort=-timestamp') => apiService.request(`/audits${params}`),
 
   // Get single audit log (Admin only)
   getAuditLog: (id) => apiService.request(`/audits/${id}`),

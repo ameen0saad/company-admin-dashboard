@@ -16,8 +16,8 @@ import auditRoutes from './routes/auditLogRoutes.js';
 import companyStatesRoutes from './routes/companyStatesRoutes.js';
 import globalErrorHandler from './controller/errorController.js';
 import AppError from './utils/appError.js';
-import { __dirname } from './utils/path.js';
-
+import { __dirname } from './path.js';
+console.log(__dirname);
 const app = express();
 app.use(
   cors({
@@ -26,7 +26,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(helmet());
 
 const limiter = rateLimit({
@@ -40,10 +40,11 @@ app.use(hpp({ whitelist: ['sort', 'page', 'limit'] }));
 
 //app.use(mongoSanitize());
 // app.use(xss());
-
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+console.log(path.join(__dirname, 'public'));
+
 app.use((req, res, next) => {
   console.log('This project works on ' + process.env.NODE_ENV);
   next();

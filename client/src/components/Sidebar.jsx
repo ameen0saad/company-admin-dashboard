@@ -10,9 +10,10 @@ export default function Sidebar({ currentPage, setCurrentPage, isMobileOpen, set
       id: 'dashboard',
       label: 'Dashboard',
       icon: LayoutDashboard,
-      roles: ['admin', 'hr', 'employee'],
+      roles: ['admin', 'hr'],
     },
     { id: 'employees', label: 'Employees', icon: Users, roles: ['admin', 'hr'] },
+    { id: 'users', label: 'Users ', icon: Users, roles: ['admin'] },
     {
       id: 'payroll',
       label: 'Payroll',
@@ -26,6 +27,8 @@ export default function Sidebar({ currentPage, setCurrentPage, isMobileOpen, set
       roles: ['admin', 'hr', 'employee'],
     },
     { id: 'audit', label: 'Audit Logs', icon: FileText, roles: ['admin'] },
+    { id: 'myTeam', label: 'My Team', icon: Users, roles: ['hr', 'employee'] },
+    { id: 'unassignedUsers', label: 'Unassigned Users', icon: Users, roles: ['admin', 'hr'] },
   ];
 
   const filteredMenuItems = menuItems.filter((item) => item.roles.includes(user?.role));
