@@ -20,9 +20,9 @@ const router = express.Router();
 router.route('/login').post(loginLimiter, authController.login);
 router.route('/logout').get(authController.logout);
 
-router.route('/forgotPassword').post(forgotPasswordLimiter, authController.forgotPassword);
-router.route('/resetPassword').patch(authController.resetPassword);
-router.route('/verifyOTP').post(authController.verifyOTP);
+// router.route('/forgotPassword').post(forgotPasswordLimiter, authController.forgotPassword);
+// router.route('/resetPassword').patch(authController.resetPassword);
+// router.route('/verifyOTP').post(authController.verifyOTP);
 
 router.use(authController.protect); //TODO : Protect all routes after this middleware
 router.route('/updatePassword').patch(authController.updatePassword);

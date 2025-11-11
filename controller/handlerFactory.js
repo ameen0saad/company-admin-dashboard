@@ -6,16 +6,17 @@ import EmployeeProfile from '../Model/employeeProfileModel.js';
 import { Email } from '../utils/email.js';
 
 // TODO : Log audit trail for create, update, and delete operations
-export const logAudit = async ({ action, model, documentId, user, before, after, changes }) => {
+export const logAudit = async ({ action, modelName, documentId, user, before, after, changes }) => {
   await AuditLog.create({
     action,
-    model,
+    modelName,
     documentId,
     user,
     before,
     after,
     changes,
   });
+  console.log(documentId);
 };
 
 const getDiff = (oldDoc, reqBody) => {
@@ -37,7 +38,6 @@ const getDiff = (oldDoc, reqBody) => {
       };
     }
   }
-
   return changes;
 };
 
@@ -59,9 +59,14 @@ export const getAll = (Model) => async (req, res, next) => {
 };
 
 export const getOne = (Model, popOptions) => async (req, res, next) => {
+  console.log('HELLO================HELLO');
+  //popOptions = 'documentId';
+  console.log(Model);
+  console.log(popOptions);
   let query = Model.findById(req.params.id);
   if (popOptions) query = query.populate(popOptions);
   const doc = await query;
+  console.log(doc);
   if (!doc) return next(new AppError('No document found with that ID', 404));
   res.status(200).json({
     status: 'success',
@@ -77,7 +82,7 @@ export const createOne = (Model) => async (req, res, next) => {
   const doc = await Model.create(req.body);
   await logAudit({
     action: 'create',
-    model: Model.modelName,
+    modelName: Model.modelName,
     documentId: doc._id,
     user: req.user._id,
   });
@@ -101,15 +106,13 @@ export const updateOne = (Model) => async (req, res, next) => {
     runValidators: true,
     new: true,
   }).setOptions({ skipInactiveFilter: true });
-
   if (!doc) return next(new AppError('No document found with that ID', 404));
-
-  const changes = getDiff(oldDoc, req.body);
-
+  console.log(doc._id);
+  const changes = getDiff(oldDoc, doc);
   if (Object.keys(changes).length > 0) {
     await logAudit({
       action: 'update',
-      model: Model.modelName,
+      modelName: Model.modelName,
       documentId: doc._id,
       user: req.user._id,
       changes,
@@ -129,7 +132,7 @@ export const deleteOne = (Model) => async (req, res, next) => {
 
   await logAudit({
     action: 'delete',
-    model: Model.modelName,
+    modelName: Model.modelName,
     documentId: doc._id,
     user: req.user._id,
     before: doc,

@@ -29,7 +29,7 @@ export const deleteEmployee = async (req, res, next) => {
   // TODO : Log audit trail for delete operation , for employee profile and user
   await factory.logAudit({
     action: 'delete',
-    model: EmployeeProfile.modelName,
+    modelName: EmployeeProfile.modelName,
     documentId: employeeProfileId,
     user: req.user._id,
     before: employeeProfile,
@@ -39,7 +39,7 @@ export const deleteEmployee = async (req, res, next) => {
 
   await factory.logAudit({
     action: 'update',
-    model: User.modelName,
+    modelName: User.modelName,
     documentId: userId,
     user: req.user._id,
     before: { active: true },

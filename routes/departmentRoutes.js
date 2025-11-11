@@ -4,13 +4,16 @@ import * as departmentController from '../controller/departmentController.js';
 import * as authController from '../controller/authController.js';
 
 const router = express.Router();
-router
-  .route('/myTeam')
-  .get(authController.protect, departmentController.getMyTeam);
+router.route('/myTeam').get(authController.protect, departmentController.getMyTeam);
+router.route('/myDepartment').get(authController.protect, departmentController.getMyDepartment);
 
 router
   .route('/')
-  .get(departmentController.getAllDepartments)
+  .get(
+    authController.protect,
+    authController.restrictTo('admin', 'hr'),
+    departmentController.getAllDepartments
+  )
   .post(
     authController.protect,
     authController.restrictTo('admin', 'hr'),
@@ -19,7 +22,11 @@ router
 
 router
   .route('/:id')
-  .get(departmentController.getDepartment)
+  .get(
+    authController.protect,
+    authController.restrictTo('admin', 'hr'),
+    departmentController.getDepartment
+  )
   .patch(
     authController.protect,
     authController.restrictTo('admin', 'hr'),

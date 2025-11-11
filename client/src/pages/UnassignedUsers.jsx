@@ -73,11 +73,12 @@ export default function UnassignedUsers() {
   const handleCreateEmployee = async (formData) => {
     try {
       setIsSaving(true);
-      // Make sure we're using the correct user ID
+      // Make sure we're using the correct user ID from viewingUser
       const updatedFormData = {
         ...formData,
         employeeId: viewingUser._id,
       };
+      console.log(updatedFormData);
       await apiService.createEmployee(updatedFormData);
       showToast('Employee profile created successfully', 'success');
       loadUsers();
@@ -181,10 +182,18 @@ export default function UnassignedUsers() {
                   <tr key={u._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-blue-600 font-semibold">
-                            {u.name?.charAt(0) || '?'}
-                          </span>
+                        <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                          {u.photo && u.photo.startsWith('u') ? (
+                            <img
+                              src={`http://127.0.0.1:3000/img/users/${u.photo}`}
+                              alt={u.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-white font-semibold">
+                              {u.name?.charAt(0) || '?'}
+                            </span>
+                          )}
                         </div>
                         <div className="ml-4">
                           <div className="text-sm font-medium text-gray-900">{u.name || 'N/A'}</div>
@@ -267,8 +276,16 @@ export default function UnassignedUsers() {
             </div>
 
             {/* Employee Form */}
+            {/* Employee Form with pre-selected user */}
             <EmployeeForm
-              employee={null}
+              employee={{
+                employeeId: {
+                  _id: viewingUser._id,
+                  name: viewingUser.name,
+                  email: viewingUser.email,
+                  role: viewingUser.role,
+                },
+              }}
               departments={departments}
               onSubmit={handleCreateEmployee}
               isLoading={isSaving}

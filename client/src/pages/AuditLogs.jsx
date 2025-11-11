@@ -54,6 +54,86 @@ export default function AuditLogs() {
     };
   };
 
+  // Helper function to get meaningful document data for modal
+  const getDocumentData = (documentId, modelName) => {
+    if (!documentId) return { display: 'N/A', details: 'No document data' };
+
+    if (typeof documentId === 'string') {
+      return { display: documentId, details: `Document ID: ${documentId}` };
+    }
+
+    if (typeof documentId === 'object') {
+      let display = '';
+      let details = '';
+
+      switch (modelName) {
+        case 'User':
+          display = documentId.name || documentId.email || 'User';
+          details = `User: ${documentId.name || 'N/A'}\nEmail: ${
+            documentId.email || 'N/A'
+          }\nRole: ${documentId.role || 'N/A'}`;
+          break;
+
+        case 'Payroll':
+          const monthNames = [
+            'January',
+            'February',
+            'March',
+            'April',
+            'May',
+            'June',
+            'July',
+            'August',
+            'September',
+            'October',
+            'November',
+            'December',
+          ];
+          const monthName = monthNames[documentId.month - 1] || `Month ${documentId.month}`;
+          display = `${monthName} ${documentId.year}`;
+          details = `Payroll Period: ${monthName} ${documentId.year}\nNet Pay: $${
+            documentId.netPay || '0'
+          }\nBonus: $${documentId.bonus || '0'}\nDeductions: $${documentId.deductions || '0'}`;
+
+          break;
+
+        case 'EmployeeProfile':
+          display = documentId.employeeId?.name || 'Employee Profile';
+          details = `Employee: ${documentId.employeeId?.name || 'N/A'}\nEmail: ${
+            documentId.employeeId?.email || 'N/A'
+          }\nSalary: $${documentId.salary || '0'}\nDepartment: ${
+            documentId.department?.name || 'N/A'
+          }`;
+          break;
+
+        case 'Department':
+          display = documentId.name || 'Department';
+          details = `Department: ${documentId.name || 'N/A'}`;
+          break;
+
+        default:
+          // Try to find common fields
+          if (documentId.name) {
+            display = documentId.name;
+            details = `${modelName}: ${documentId.name}`;
+          } else if (documentId.email) {
+            display = documentId.email;
+            details = `${modelName}: ${documentId.email}`;
+          } else if (documentId._id) {
+            display = 'Document';
+            details = `${modelName} ID: ${documentId._id}`;
+          } else {
+            display = 'Document';
+            details = `${modelName} Document`;
+          }
+      }
+
+      return { display, details };
+    }
+
+    return { display: 'N/A', details: 'Unknown document' };
+  };
+
   const applyFilters = () => {
     let filtered = logs;
 
@@ -64,7 +144,8 @@ export default function AuditLogs() {
         const userData = getUserData(log.user);
         return (
           userData.name?.toLowerCase().includes(searchLower) ||
-          log.model?.toLowerCase().includes(searchLower)
+          userData.email?.toLowerCase().includes(searchLower) ||
+          log.modelName?.toLowerCase().includes(searchLower)
         );
       });
     }
@@ -76,7 +157,7 @@ export default function AuditLogs() {
 
     // Model filter
     if (modelFilter) {
-      filtered = filtered.filter((log) => log.model === modelFilter);
+      filtered = filtered.filter((log) => log.modelName === modelFilter);
     }
 
     setFilteredLogs(filtered);
@@ -143,18 +224,8 @@ export default function AuditLogs() {
     }
   };
 
-  // Safe function to extract document ID from complex objects
-  const getDocumentId = (documentId) => {
-    if (!documentId) return 'N/A';
-    if (typeof documentId === 'string') return documentId;
-    if (typeof documentId === 'object' && documentId._id) {
-      return documentId._id;
-    }
-    return 'N/A';
-  };
-
   const getAllModels = () => {
-    const models = new Set(logs.map((log) => log.model));
+    const models = new Set(logs.map((log) => log.modelName));
     return Array.from(models).sort();
   };
 
@@ -275,6 +346,7 @@ export default function AuditLogs() {
               <tbody className="divide-y divide-gray-200">
                 {filteredLogs.map((log) => {
                   const userData = getUserData(log.user);
+
                   return (
                     <tr key={log._id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
@@ -289,7 +361,7 @@ export default function AuditLogs() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-gray-900">{log.model}</span>
+                        <span className="text-sm font-medium text-gray-900">{log.modelName}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
@@ -329,7 +401,7 @@ export default function AuditLogs() {
       {/* Details Modal */}
       <Modal
         isOpen={isModalOpen}
-        title={`${viewingLog?.action?.toUpperCase()} - ${viewingLog?.model}`}
+        title={`${viewingLog?.action?.toUpperCase()} - ${viewingLog?.modelName}`}
         onClose={() => setIsModalOpen(false)}
         maxWidth="max-w-2xl"
       >
@@ -354,14 +426,26 @@ export default function AuditLogs() {
 
               <div>
                 <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Model</p>
-                <p className="text-sm font-medium text-gray-900">{viewingLog.model}</p>
+                <p className="text-sm font-medium text-gray-900">{viewingLog.modelName}</p>
               </div>
 
               <div>
-                <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Document ID</p>
-                <p className="text-sm text-gray-900 break-all font-mono text-xs">
-                  {getDocumentId(viewingLog.documentId)}
-                </p>
+                <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Document</p>
+                <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                  <p className="text-sm font-medium text-gray-900 mb-1">
+                    {getDocumentData(viewingLog.documentId, viewingLog.modelName).display}
+                  </p>
+                  <pre className="text-xs text-gray-600 whitespace-pre-wrap">
+                    {getDocumentData(viewingLog.documentId, viewingLog.modelName).details}
+                  </pre>
+                  {viewingLog.documentId &&
+                    typeof viewingLog.documentId === 'object' &&
+                    viewingLog.documentId._id && (
+                      <p className="text-xs text-gray-500 font-mono break-all mt-2">
+                        Document ID: {viewingLog.documentId._id}
+                      </p>
+                    )}
+                </div>
               </div>
 
               <div>

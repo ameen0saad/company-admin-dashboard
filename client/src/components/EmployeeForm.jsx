@@ -18,17 +18,20 @@ export default function EmployeeForm({ employee, departments, onSubmit, isLoadin
 
   useEffect(() => {
     if (employee) {
-      setFormData({
+      setFormData((prev) => ({
         employeeId: employee.employeeId?._id || '',
         department: employee.department?._id || '',
         salary: employee.salary || '',
         phone: employee.phone || '',
         address: employee.address || '',
         dateOfBirth: employee.dateOfBirth?.split('T')[0] || '',
-        joiningDate: employee.joiningDate?.split('T')[0] || '',
-      });
+        joiningDate: employee.joiningDate?.split('T')[0] || prev.joiningDate, // Keep default if not editing
+      }));
     }
-    loadUsers();
+    // Only load users if we don't have a pre-selected employee
+    if (!employee || !employee.employeeId) {
+      loadUsers();
+    }
   }, [employee]);
 
   const loadUsers = async () => {
@@ -104,29 +107,31 @@ export default function EmployeeForm({ employee, departments, onSubmit, isLoadin
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {/* Employee Selection */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Select Employee User *
-        </label>
-        <select
-          name="employeeId"
-          value={formData.employeeId}
-          onChange={handleChange}
-          disabled={usersLoading || !!employee}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 ${
-            errors.employeeId ? 'border-red-500' : 'border-gray-300'
-          }`}
-        >
-          <option value="">{usersLoading ? 'Loading users...' : 'Select employee'}</option>
-          {users.map((user) => (
-            <option key={user._id} value={user._id}>
-              {user.name} ({user.email}) - {user.role}
-            </option>
-          ))}
-        </select>
-        {errors.employeeId && <p className="text-red-500 text-xs mt-1">{errors.employeeId}</p>}
-      </div>
+      {/* Employee Selection - Only show if NO pre-selected employee */}
+      {!employee?.employeeId && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Select Employee User *
+          </label>
+          <select
+            name="employeeId"
+            value={formData.employeeId}
+            onChange={handleChange}
+            disabled={usersLoading}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 ${
+              errors.employeeId ? 'border-red-500' : 'border-gray-300'
+            }`}
+          >
+            <option value="">{usersLoading ? 'Loading users...' : 'Select employee'}</option>
+            {users.map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.name} ({user.email}) - {user.role}
+              </option>
+            ))}
+          </select>
+          {errors.employeeId && <p className="text-red-500 text-xs mt-1">{errors.employeeId}</p>}
+        </div>
+      )}
 
       {/* Department Assignment */}
       <div>

@@ -20,6 +20,12 @@ export default function UserManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
+  // New states for view and edit functionality
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   useEffect(() => {
     loadUsers();
   }, []);
@@ -85,12 +91,40 @@ export default function UserManagement() {
     }
   };
 
+  const handleEditUser = async (formData) => {
+    if (!selectedUser) return;
+
+    try {
+      setIsEditing(true);
+      await apiService.updateUser(selectedUser._id, formData);
+      showToast('User updated successfully', 'success');
+      loadUsers();
+      setIsEditModalOpen(false);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error('Failed to update user:', err);
+      showToast(err.message || 'Failed to update user', 'error');
+    } finally {
+      setIsEditing(false);
+    }
+  };
+
+  const handleViewUser = (user) => {
+    setSelectedUser(user);
+    setIsViewModalOpen(true);
+  };
+
+  const handleEditClick = (user) => {
+    setSelectedUser(user);
+    setIsEditModalOpen(true);
+  };
+
   const handleDelete = async () => {
     if (!deleteConfirm.userId) return;
 
     try {
       setDeleting(true);
-      await apiService.deleteUser(deleteConfirm.userId);
+      await apiService.updateUser(deleteConfirm.userId, { active: false });
       setUsers(users.map((u) => (u._id === deleteConfirm.userId ? { ...u, active: false } : u)));
       setDeleteConfirm({ isOpen: false, userId: null });
       showToast('User deactivated successfully', 'success');
@@ -132,6 +166,15 @@ export default function UserManagement() {
       default:
         return '❓';
     }
+  };
+
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   if (loading) {
@@ -269,7 +312,7 @@ export default function UserManagement() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                          {user.photo.startsWith('u') ? (
+                          {user.photo && user.photo.startsWith('u') ? (
                             <img
                               src={`http://127.0.0.1:3000/img/users/${user.photo}`}
                               alt={user.name}
@@ -309,20 +352,20 @@ export default function UserManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-600">
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </span>
+                      <span className="text-sm text-gray-600">{formatDate(user.createdAt)}</span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          title="View"
+                          onClick={() => handleViewUser(user)}
+                          title="View Details"
                           className="text-blue-600 hover:text-blue-900 hover:bg-blue-50 p-2 rounded transition-colors"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
-                          title="Edit"
+                          onClick={() => handleEditClick(user)}
+                          title="Edit User"
                           className="text-green-600 hover:text-green-900 hover:bg-green-50 p-2 rounded transition-colors"
                         >
                           <Edit2 className="w-4 h-4" />
@@ -353,6 +396,97 @@ export default function UserManagement() {
         maxWidth="max-w-lg"
       >
         <UserForm onSubmit={handleCreateUser} isLoading={isCreating} />
+      </Modal>
+
+      {/* View User Modal */}
+      <Modal
+        isOpen={isViewModalOpen}
+        title="User Details"
+        onClose={() => {
+          setIsViewModalOpen(false);
+          setSelectedUser(null);
+        }}
+        maxWidth="max-w-md"
+      >
+        {selectedUser && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                {selectedUser.photo && selectedUser.photo.startsWith('u') ? (
+                  <img
+                    src={`http://127.0.0.1:3000/img/users/${selectedUser.photo}`}
+                    alt={selectedUser.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-white font-semibold text-lg">
+                    {selectedUser.name?.charAt(0) || '?'}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">{selectedUser.name}</h3>
+                <p className="text-gray-600">{selectedUser.email}</p>
+                <span
+                  className={`mt-1 px-2 py-1 text-xs font-medium rounded capitalize ${getRoleColor(
+                    selectedUser.role
+                  )}`}
+                >
+                  {selectedUser.role}
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <p className="text-gray-600 font-medium">Status</p>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded ${
+                    selectedUser.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                  }`}
+                >
+                  {selectedUser.active ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+              <div>
+                <p className="text-gray-600 font-medium">Created</p>
+                <p className="text-gray-900">{formatDate(selectedUser.createdAt)}</p>
+              </div>
+            </div>
+
+            {selectedUser.updatedAt && (
+              <div className="text-sm">
+                <p className="text-gray-600 font-medium">Last Updated</p>
+                <p className="text-gray-900">{formatDate(selectedUser.updatedAt)}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {/* Edit User Modal */}
+      <Modal
+        isOpen={isEditModalOpen}
+        title="Edit User"
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedUser(null);
+        }}
+        maxWidth="max-w-lg"
+      >
+        {selectedUser && (
+          <UserForm
+            onSubmit={handleEditUser}
+            isLoading={isEditing}
+            initialData={{
+              name: selectedUser.name,
+              email: selectedUser.email,
+              role: selectedUser.role,
+              // Note: We don't pre-fill password fields for security
+            }}
+            isEdit={true}
+          />
+        )}
       </Modal>
 
       {/* Delete Confirmation */}

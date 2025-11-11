@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-export default function UserForm({ onSubmit, isLoading }) {
+export default function UserForm({ onSubmit, isLoading, initialData, isEdit = false }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -11,6 +11,19 @@ export default function UserForm({ onSubmit, isLoading }) {
 
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Initialize form with initial data when in edit mode
+  useEffect(() => {
+    if (isEdit && initialData) {
+      setFormData({
+        name: initialData.name || '',
+        email: initialData.email || '',
+        password: '', // Don't pre-fill passwords for security
+        passwordConfirm: '',
+        role: initialData.role || 'employee',
+      });
+    }
+  }, [isEdit, initialData]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -25,16 +38,32 @@ export default function UserForm({ onSubmit, isLoading }) {
       newErrors.email = 'Invalid email format';
     }
 
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
+    // Only validate password for new users
+    if (!isEdit) {
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+
+      if (!formData.passwordConfirm) {
+        newErrors.passwordConfirm = 'Please confirm your password';
+      } else if (formData.password !== formData.passwordConfirm) {
+        newErrors.passwordConfirm = 'Passwords do not match';
+      }
     }
 
-    if (!formData.passwordConfirm) {
-      newErrors.passwordConfirm = 'Please confirm your password';
-    } else if (formData.password !== formData.passwordConfirm) {
-      newErrors.passwordConfirm = 'Passwords do not match';
+    // Validate password if provided in edit mode (optional update)
+    if (isEdit && formData.password) {
+      if (formData.password.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+
+      if (!formData.passwordConfirm) {
+        newErrors.passwordConfirm = 'Please confirm your password';
+      } else if (formData.password !== formData.passwordConfirm) {
+        newErrors.passwordConfirm = 'Passwords do not match';
+      }
     }
 
     setErrors(newErrors);
@@ -62,9 +91,14 @@ export default function UserForm({ onSubmit, isLoading }) {
       const data = new FormData();
       data.append('name', formData.name);
       data.append('email', formData.email);
-      data.append('password', formData.password);
-      data.append('passwordConfirm', formData.passwordConfirm);
       data.append('role', formData.role);
+
+      // Only append password if provided (for edit mode) or required (for create mode)
+      if (formData.password) {
+        data.append('password', formData.password);
+        data.append('passwordConfirm', formData.passwordConfirm);
+      }
+
       if (formData.photo) data.append('photo', formData.photo);
 
       onSubmit(data);
@@ -99,8 +133,10 @@ export default function UserForm({ onSubmit, isLoading }) {
             errors.email ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="john@example.com"
+          disabled={isEdit} // Email shouldn't be changed in edit mode
         />
         {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+        {isEdit && <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>}
       </div>
 
       <div>
@@ -126,10 +162,13 @@ export default function UserForm({ onSubmit, isLoading }) {
           onChange={(e) => setFormData((prev) => ({ ...prev, photo: e.target.files[0] }))}
           className="w-full"
         />
+        {isEdit && <p className="text-xs text-gray-500 mt-1">Leave empty to keep current photo</p>}
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          {isEdit ? 'New Password (optional)' : 'Password'}
+        </label>
         <div className="relative">
           <input
             type={showPassword ? 'text' : 'password'}
@@ -139,7 +178,9 @@ export default function UserForm({ onSubmit, isLoading }) {
             className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
               errors.password ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="Enter password (min 8 characters)"
+            placeholder={
+              isEdit ? 'Enter new password (optional)' : 'Enter password (min 8 characters)'
+            }
           />
           <button
             type="button"
@@ -150,24 +191,33 @@ export default function UserForm({ onSubmit, isLoading }) {
           </button>
         </div>
         {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-        <input
-          type={showPassword ? 'text' : 'password'}
-          name="passwordConfirm"
-          value={formData.passwordConfirm}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-            errors.passwordConfirm ? 'border-red-500' : 'border-gray-300'
-          }`}
-          placeholder="Confirm password"
-        />
-        {errors.passwordConfirm && (
-          <p className="text-red-500 text-xs mt-1">{errors.passwordConfirm}</p>
+        {isEdit && (
+          <p className="text-xs text-gray-500 mt-1">
+            Leave password fields empty to keep current password
+          </p>
         )}
       </div>
+
+      {formData.password && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Confirm {isEdit ? 'New ' : ''}Password
+          </label>
+          <input
+            type={showPassword ? 'text' : 'password'}
+            name="passwordConfirm"
+            value={formData.passwordConfirm}
+            onChange={handleChange}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              errors.passwordConfirm ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder={`Confirm ${isEdit ? 'new ' : ''}password`}
+          />
+          {errors.passwordConfirm && (
+            <p className="text-red-500 text-xs mt-1">{errors.passwordConfirm}</p>
+          )}
+        </div>
+      )}
 
       <div className="pt-2">
         <button
@@ -175,7 +225,13 @@ export default function UserForm({ onSubmit, isLoading }) {
           disabled={isLoading}
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
         >
-          {isLoading ? 'Creating User...' : 'Create User'}
+          {isLoading
+            ? isEdit
+              ? 'Updating User...'
+              : 'Creating User...'
+            : isEdit
+            ? 'Update User'
+            : 'Create User'}
         </button>
       </div>
     </form>

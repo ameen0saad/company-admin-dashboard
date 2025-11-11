@@ -24,3 +24,16 @@ export const getMyTeam = async (req, res, next) => {
     },
   });
 };
+
+export const getMyDepartment = async (req, res, next) => {
+  const employeeId = req.user._id;
+  console.log(employeeId);
+  const employeeProfile = await EmployeeProfile.findOne({ employeeId });
+  const department = await Department.findById(employeeProfile.department);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      department,
+    },
+  });
+};

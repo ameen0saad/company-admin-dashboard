@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 import EmployeeProfile from './employeeProfileModel.js';
+import { Email } from '../utils/email.js';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -78,6 +79,10 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
   next();
+});
+
+userSchema.pre('save', async function (next) {
+  if (this.isModified('active') && this.active === true) next();
 });
 
 userSchema.methods.correctPassword = async function (candidatePassword, userPassword) {

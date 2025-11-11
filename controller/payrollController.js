@@ -16,7 +16,7 @@ export const createPayroll = async (req, res, next) => {
 
   await factory.logAudit({
     action: 'create',
-    model: Payroll.modelName,
+    modelName: Payroll.modelName,
     documentId: payroll._id,
     user: req.user._id,
   });

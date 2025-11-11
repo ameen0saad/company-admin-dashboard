@@ -7,7 +7,7 @@ export const apiService = {
 
     const headers = {
       ...(token && { Authorization: `Bearer ${token}` }),
-      ...(!isFormData && { 'Content-Type': 'application/json' }), // <== مهم جدًا
+      ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...options.headers,
     };
 
@@ -99,15 +99,20 @@ export const apiService = {
   getUnassignedUsers: () => apiService.request('/users/unassigned'),
 
   // Get inactive users (Admin only)
-  getInactiveUsers: (params = '') => apiService.request(`/users/inactive${params}`),
+  getInactiveUsers: () => apiService.request(`/users/inactive`),
 
   // Update user (Admin only)
-  updateUser: (id, formData) =>
-    apiService.request(`/users/${id}`, {
+  updateUser: (id, data) => {
+    // Check if data is FormData or regular object
+    const isFormData = data instanceof FormData;
+    const body = isFormData ? data : JSON.stringify(data);
+
+    return apiService.request(`/users/${id}`, {
       method: 'PATCH',
-      body: formData,
-      headers: {}, // Let browser set Content-Type for FormData
-    }),
+      body: body,
+      headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+    });
+  },
 
   // Delete user (soft delete - Admin only)
   deleteUser: (id) => apiService.request(`/users/${id}`, { method: 'DELETE' }),

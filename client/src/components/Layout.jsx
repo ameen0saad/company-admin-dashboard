@@ -11,6 +11,8 @@ import MyTeam from '../pages/MyTeam';
 import MyProfile from '../pages/MyProfile';
 import UserManagement from '../pages/UserManagement';
 import UnassignedUsers from '../pages/UnassignedUsers';
+import InactiveUsers from '../pages/InactiveUsers';
+import EmployeeDashboard from '../pages/EmployeeHomepage';
 
 export default function Layout() {
   const { user } = useAuth();
@@ -37,6 +39,10 @@ export default function Layout() {
         return <UserManagement />;
       case 'unassignedUsers':
         return <UnassignedUsers />;
+      case 'InactiveUsers':
+        return <InactiveUsers />;
+      case 'employeeHomepage':
+        return <EmployeeDashboard />;
       default:
         return <Dashboard />;
     }

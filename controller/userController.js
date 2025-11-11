@@ -16,6 +16,7 @@ const multerFilter = (req, file, cb) => {
 };
 
 export const resizeUserPhoto = async (req, res, next) => {
+  console.log(req.body);
   if (!req.file) return next();
   req.file.filename = `user-${req.params?.id || crypto.randomUUID()}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)

@@ -12,8 +12,15 @@ export default function Sidebar({ currentPage, setCurrentPage, isMobileOpen, set
       icon: LayoutDashboard,
       roles: ['admin', 'hr'],
     },
-    { id: 'employees', label: 'Employees', icon: Users, roles: ['admin', 'hr'] },
     { id: 'users', label: 'Users ', icon: Users, roles: ['admin'] },
+    {
+      id: 'InactiveUsers',
+      label: 'Inactive Users',
+      icon: Users,
+      roles: ['admin'],
+    },
+    { id: 'unassignedUsers', label: 'Unassigned Users', icon: Users, roles: ['admin', 'hr'] },
+    { id: 'employees', label: 'Employees', icon: Users, roles: ['admin', 'hr'] },
     {
       id: 'payroll',
       label: 'Payroll',
@@ -28,7 +35,7 @@ export default function Sidebar({ currentPage, setCurrentPage, isMobileOpen, set
     },
     { id: 'audit', label: 'Audit Logs', icon: FileText, roles: ['admin'] },
     { id: 'myTeam', label: 'My Team', icon: Users, roles: ['hr', 'employee'] },
-    { id: 'unassignedUsers', label: 'Unassigned Users', icon: Users, roles: ['admin', 'hr'] },
+    { id: 'employeeHomepage', label: 'Employee Home page', icon: Users, roles: ['hr', 'employee'] },
   ];
 
   const filteredMenuItems = menuItems.filter((item) => item.roles.includes(user?.role));

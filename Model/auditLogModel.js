@@ -6,14 +6,14 @@ const auditLogSchema = new mongoose.Schema({
     enum: ['create', 'update', 'delete'],
     required: [true, 'action must have an action'],
   },
-  model: {
+  modelName: {
     type: String,
     required: [true, 'action must have a model'],
   },
   documentId: {
     type: mongoose.Schema.ObjectId,
     required: [true, 'action must have a documentId'],
-    refPath: 'model',
+    refPath: 'modelName',
   },
   user: {
     type: mongoose.Schema.ObjectId,
@@ -39,8 +39,11 @@ auditLogSchema.pre(/^find/, function (next) {
     },
     {
       path: 'documentId',
+      select: 'name month email role salary year netPay bonus deductions',
+      options: { skipInactiveFilter: true },
     },
   ]);
+
   next();
 });
 const AuditLog = mongoose.model('AuditLog', auditLogSchema);
