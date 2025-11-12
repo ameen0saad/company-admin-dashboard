@@ -84,7 +84,15 @@ export default function MyProfile() {
         <div className="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
           <div className="text-center mb-6">
             <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
-              <span className="text-3xl font-bold">{user?.name?.charAt(0) || 'U'}</span>
+              {user.photo.startsWith('u') ? (
+                <img
+                  src={`http://127.0.0.1:3000/img/users/${user?.photo}`}
+                  alt={user?.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-3xl font-bold">{user?.name?.charAt(0) || '?'}</span>
+              )}
             </div>
             <h2 className="text-xl font-bold text-gray-900">{user?.name || 'N/A'}</h2>
             <p className="text-sm text-gray-600 capitalize mt-1">{user?.role || 'N/A'}</p>

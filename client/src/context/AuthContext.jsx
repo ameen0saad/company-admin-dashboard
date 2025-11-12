@@ -4,8 +4,28 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [token, setToken] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken);
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Failed to restore auth state:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
+    }
+    setLoading(false);
+  }, []);
+
+  // Sync token to localStorage whenever it changes
   useEffect(() => {
     if (token) {
       localStorage.setItem('token', token);
@@ -13,6 +33,15 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
     }
   }, [token]);
+
+  // Sync user to localStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
 
   const login = (userData, authToken) => {
     setUser(userData);
@@ -23,6 +52,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
   const hasRole = (roles) => {
@@ -46,6 +76,7 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         isHR,
         isEmployee,
+        loading,
       }}
     >
       {children}

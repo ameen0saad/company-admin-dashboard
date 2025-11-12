@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Sidebar from './Sidebar';
 import Dashboard from '../pages/Dashboard';
 import EmployeesList from '../pages/EmployeesList';
 import PayrollList from '../pages/PayrollList';
+import MyPayroll from '../pages/MyPayroll';
 import DepartmentsList from '../pages/DepartmentsList';
 import AuditLogs from '../pages/AuditLogs';
 import MyTeam from '../pages/MyTeam';
@@ -16,34 +17,101 @@ import EmployeeDashboard from '../pages/EmployeeHomepage';
 
 export default function Layout() {
   const { user } = useAuth();
-  const [currentPage, setCurrentPage] = useState('dashboard');
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Set default page based on role
+    if (user?.role === 'employee') return 'employeeHomepage';
+    if (user?.role === 'hr' || user?.role === 'admin') return 'dashboard';
+    return 'employeeHomepage';
+  });
+
+  // Update default page if role changes
+  useEffect(() => {
+    if (user?.role === 'employee') {
+      setCurrentPage('employeeHomepage');
+    } else if (user?.role === 'hr' || user?.role === 'admin') {
+      setCurrentPage('dashboard');
+    }
+  }, [user?.role]);
 
   const renderPage = () => {
     switch (currentPage) {
+      // Admin/HR - Company Status Dashboard
       case 'dashboard':
-        return <Dashboard />;
+        if (user?.role === 'admin' || user?.role === 'hr') {
+          return <Dashboard />;
+        }
+        return <EmployeeDashboard />;
+
+      // Employees List (Admin/HR only)
       case 'employees':
-        return <EmployeesList />;
+        if (user?.role === 'admin' || user?.role === 'hr') {
+          return <EmployeesList />;
+        }
+        return <EmployeeDashboard />;
+
       case 'payroll':
-        return <PayrollList />;
+        if (user?.role === 'admin' || user?.role === 'hr') {
+          return <PayrollList />;
+        }
+        return <EmployeeDashboard />;
+
+      // My Payroll (All roles)
+      case 'myPayroll':
+        return <MyPayroll />;
+
+      // Departments (All roles)
       case 'departments':
         return <DepartmentsList />;
+
+      // Audit Logs (Admin only)
       case 'audit':
-        return <AuditLogs />;
+        if (user?.role === 'admin') {
+          return <AuditLogs />;
+        }
+        return <EmployeeDashboard />;
+
+      // My Team (HR/Employee)
       case 'myTeam':
-        return <MyTeam />;
+        if (user?.role === 'hr' || user?.role === 'employee') {
+          return <MyTeam />;
+        }
+        return <EmployeeDashboard />;
+
+      // My Profile (All roles)
       case 'myProfile':
         return <MyProfile />;
+
+      // Users Management (Admin only)
       case 'users':
-        return <UserManagement />;
+        if (user?.role === 'admin') {
+          return <UserManagement />;
+        }
+        return <EmployeeDashboard />;
+
+      // Unassigned Users (Admin/HR only)
       case 'unassignedUsers':
-        return <UnassignedUsers />;
+        if (user?.role === 'admin' || user?.role === 'hr') {
+          return <UnassignedUsers />;
+        }
+        return <EmployeeDashboard />;
+
+      // Inactive Users (Admin only)
       case 'InactiveUsers':
-        return <InactiveUsers />;
+        if (user?.role === 'admin') {
+          return <InactiveUsers />;
+        }
+        return <EmployeeDashboard />;
+
+      // Employee Homepage
       case 'employeeHomepage':
         return <EmployeeDashboard />;
+
       default:
+        // Default based on role
+        if (user?.role === 'employee') {
+          return <EmployeeDashboard />;
+        }
         return <Dashboard />;
     }
   };

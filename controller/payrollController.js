@@ -13,7 +13,6 @@ export const createPayroll = async (req, res, next) => {
   req.body.createdBy = req.user._id;
 
   const payroll = await Payroll.create(req.body);
-
   await factory.logAudit({
     action: 'create',
     modelName: Payroll.modelName,
@@ -52,7 +51,7 @@ export const getMyPayrolls = async (req, res, next) => {
   if (!employeeProfile) {
     return next(new AppError('No Employee Profile found for this user', 404));
   }
-  req.query.sort = '-year -month';
+
   const features = new APIFeatures(
     Payroll.find({ employeeProfileId: employeeProfile._id }).select('-createdBy -updatedBy -__v'),
     req.query
@@ -73,6 +72,42 @@ export const getMyPayrolls = async (req, res, next) => {
     },
   });
 };
+export const getMyPayrollsStats = async (req, res, next) => {
+  const employeeProfile = await EmployeeProfile.findOne({
+    employeeId: req.user._id,
+  });
+
+  if (!employeeProfile) {
+    return next(new AppError('No Employee Profile found for this user', 404));
+  }
+
+  const stats = await Payroll.aggregate([
+    {
+      $match: { employeeProfileId: employeeProfile._id },
+    },
+    {
+      $group: {
+        _id: null,
+        totalEarned: { $sum: { $ifNull: ['$netPay', 0] } },
+        totalBonus: { $sum: { $ifNull: ['$bonus', 0] } },
+        totalDeduction: { $sum: { $ifNull: ['$deductions', 0] } },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      stats: stats[0] || {
+        totalEarned: 0,
+        totalBonus: 0,
+        totalDeduction: 0,
+        count: 0,
+      },
+    },
+  });
+};
 
 export const preventHrSelfModification = async (req, res, next) => {
   let payroll;
@@ -81,7 +116,7 @@ export const preventHrSelfModification = async (req, res, next) => {
     if (!payroll) return next(new AppError('No found Payroll with that ID : ', 400));
   }
   const employeeId =
-    req.body.employeeProfileId || req.params.employeeId || payroll.employeeProfileId;
+    payroll?.employeeProfileId._id || req.body?.employeeProfileId || req.params?.employeeId;
 
   if (!employeeId) {
     return next(new AppError('No employee ID provided', 400));

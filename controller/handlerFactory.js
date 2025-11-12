@@ -16,7 +16,6 @@ export const logAudit = async ({ action, modelName, documentId, user, before, af
     after,
     changes,
   });
-  console.log(documentId);
 };
 
 const getDiff = (oldDoc, reqBody) => {
@@ -59,14 +58,11 @@ export const getAll = (Model) => async (req, res, next) => {
 };
 
 export const getOne = (Model, popOptions) => async (req, res, next) => {
-  console.log('HELLO================HELLO');
   //popOptions = 'documentId';
-  console.log(Model);
-  console.log(popOptions);
+
   let query = Model.findById(req.params.id);
   if (popOptions) query = query.populate(popOptions);
   const doc = await query;
-  console.log(doc);
   if (!doc) return next(new AppError('No document found with that ID', 404));
   res.status(200).json({
     status: 'success',
@@ -107,7 +103,6 @@ export const updateOne = (Model) => async (req, res, next) => {
     new: true,
   }).setOptions({ skipInactiveFilter: true });
   if (!doc) return next(new AppError('No document found with that ID', 404));
-  console.log(doc._id);
   const changes = getDiff(oldDoc, doc);
   if (Object.keys(changes).length > 0) {
     await logAudit({

@@ -13,7 +13,7 @@ export const getMyTeam = async (req, res, next) => {
     employeeId: req.user._id,
   });
   const myTeam = await EmployeeProfile.find({
-    department: employeeProfile.department,
+    department: employeeProfile.department.id,
     employeeId: { $ne: req.user._id },
   }).select('-salary');
   res.status(200).json({
@@ -21,19 +21,6 @@ export const getMyTeam = async (req, res, next) => {
     results: myTeam.length,
     data: {
       myTeam,
-    },
-  });
-};
-
-export const getMyDepartment = async (req, res, next) => {
-  const employeeId = req.user._id;
-  console.log(employeeId);
-  const employeeProfile = await EmployeeProfile.findOne({ employeeId });
-  const department = await Department.findById(employeeProfile.department);
-  res.status(200).json({
-    status: 'success',
-    data: {
-      department,
     },
   });
 };

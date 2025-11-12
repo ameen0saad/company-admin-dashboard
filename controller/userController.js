@@ -16,7 +16,6 @@ const multerFilter = (req, file, cb) => {
 };
 
 export const resizeUserPhoto = async (req, res, next) => {
-  console.log(req.body);
   if (!req.file) return next();
   req.file.filename = `user-${req.params?.id || crypto.randomUUID()}-${Date.now()}.jpeg`;
   await sharp(req.file.buffer)
@@ -41,14 +40,35 @@ export const deleteUser = async (req, res, next) => {
     req.params.id,
     { active: false },
     {
-      new: true,
       runValidators: true,
     }
   );
   if (!user) return next(new AppError('No user found with that ID', 404));
 
   //  TODO :  delete associated employee profile if exists
-  await EmployeeProfile.deleteOne({ employeeId: user._id });
+  const employeeProfile = await EmployeeProfile.findOne({ employeeId: user._id });
+
+  await factory.logAudit({
+    action: 'delete',
+    modelName: User.modelName,
+    documentId: user._id,
+    user: req.user._id,
+    before: user,
+    after: null,
+    changes: null,
+  });
+  if (employeeProfile) {
+    await employeeProfile.deleteOne();
+    await factory.logAudit({
+      action: 'delete',
+      modelName: EmployeeProfile.modelName,
+      documentId: employeeProfile._id,
+      user: req.user._id,
+      before: employeeProfile,
+      after: null,
+      changes: null,
+    });
+  }
 
   res.status(204).json({
     status: 'success',

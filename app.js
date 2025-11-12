@@ -17,7 +17,7 @@ import companyStatesRoutes from './routes/companyStatesRoutes.js';
 import globalErrorHandler from './controller/errorController.js';
 import AppError from './utils/appError.js';
 import { __dirname } from './path.js';
-console.log(__dirname);
+
 const app = express();
 app.use(
   cors({
@@ -43,12 +43,6 @@ app.use(hpp({ whitelist: ['sort', 'page', 'limit'] }));
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-console.log(path.join(__dirname, 'public'));
-
-app.use((req, res, next) => {
-  console.log('This project works on ' + process.env.NODE_ENV);
-  next();
-});
 
 // Add this to your app.js
 app.set('query parser', (str) => {
@@ -63,7 +57,6 @@ app.use('/api/v1/audits', auditRoutes);
 app.use('/api/v1/company', companyStatesRoutes);
 
 app.all('*split', (req, res, next) => {
-  console.log('Hello from 404 middleware');
   return next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 

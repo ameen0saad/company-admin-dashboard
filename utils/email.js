@@ -61,8 +61,6 @@ export class Email {
   }
   async sendPayroll(payroll, employeeProfile) {
     const templatePath = path.join(__dirname, 'public', 'HTML', 'payrollTemplate.html');
-    console.log(payroll.MonthName);
-    console.log(payroll.year);
     const htmlTemplate = fs
       .readFileSync(templatePath, 'utf-8')
       .replace('{{employeeName}}', this.name)

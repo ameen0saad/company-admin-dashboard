@@ -6,10 +6,14 @@ export const apiService = {
     const isFormData = options.body instanceof FormData;
 
     const headers = {
-      ...(token && { Authorization: `Bearer ${token}` }),
       ...(!isFormData && { 'Content-Type': 'application/json' }),
       ...options.headers,
     };
+
+    // Always add authorization header if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}${endpoint}`, {
@@ -25,62 +29,65 @@ export const apiService = {
         data = await response.text();
       }
 
+      // Handle error responses
       if (!response.ok) {
-        throw new Error(data?.message || 'Something went wrong');
+        // Handle 401 Unauthorized - clear auth but DON'T redirect
+        if (response.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          // Don't redirect here - let the component handle it
+          throw new Error(data?.message || 'Unauthorized: Invalid email or password');
+        }
+
+        // Handle other errors
+        const errorMessage = data?.message || data?.error || `Error: ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
+      // Re-throw the error so the component can handle it
       throw error;
     }
   },
 
   // ==================== AUTHENTICATION ====================
 
-  // Login
   login: (email, password) =>
     apiService.request('/users/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     }),
 
-  // Logout
   logout: () => apiService.request('/users/logout'),
 
-  // Signup (Admin only)
   signup: (formData) =>
     apiService.request('/users/signup', {
       method: 'POST',
       body: formData,
-      headers: {}, // Let browser set Content-Type for FormData
     }),
 
-  // Forgot Password
   forgotPassword: (email) =>
     apiService.request('/users/forgotPassword', {
       method: 'POST',
       body: JSON.stringify({ email }),
     }),
 
-  // Verify OTP
   verifyOTP: (otp) =>
     apiService.request('/users/verifyOTP', {
       method: 'POST',
       body: JSON.stringify({ otp }),
     }),
 
-  // Reset Password
   resetPassword: (newPassword, confirmPassword, token) =>
     apiService.request('/users/resetPassword', {
       method: 'PATCH',
       body: JSON.stringify({ newPassword, confirmPassword }),
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     }),
 
-  // Update Password (Logged in user)
   updatePassword: (currentPassword, newPassword, confirmPassword) =>
     apiService.request('/users/updatePassword', {
       method: 'PATCH',
@@ -89,21 +96,15 @@ export const apiService = {
 
   // ==================== USERS ====================
 
-  // Get all users (Admin only)
   getUsers: (params = '') => apiService.request(`/users${params}`),
 
-  // Get single user (Admin only)
   getUser: (id) => apiService.request(`/users/${id}`),
 
-  // Get unassigned users (Admin/HR)
   getUnassignedUsers: () => apiService.request('/users/unassigned'),
 
-  // Get inactive users (Admin only)
   getInactiveUsers: () => apiService.request(`/users/inactive`),
 
-  // Update user (Admin only)
   updateUser: (id, data) => {
-    // Check if data is FormData or regular object
     const isFormData = data instanceof FormData;
     const body = isFormData ? data : JSON.stringify(data);
 
@@ -113,110 +114,123 @@ export const apiService = {
       headers: isFormData ? {} : { 'Content-Type': 'application/json' },
     });
   },
+  deleteUser: (id, data) => {
+    const isFormData = data instanceof FormData;
+    const body = isFormData ? data : JSON.stringify(data);
 
-  // Delete user (soft delete - Admin only)
+    return apiService.request(`/users/${id}`, {
+      method: 'DELETE',
+      body: body,
+      headers: isFormData ? {} : { 'Content-Type': 'application/json' },
+    });
+  },
+
   deleteUser: (id) => apiService.request(`/users/${id}`, { method: 'DELETE' }),
+
+  sendActivationEmail: (userId) =>
+    apiService.request(`/users/${userId}/send-activation-email`, {
+      method: 'POST',
+    }),
+
+  getNotifications: () =>
+    apiService.request('/users/notifications', {
+      method: 'GET',
+    }),
+
+  getUserStats: () =>
+    apiService.request('/users/stats', {
+      method: 'GET',
+    }),
 
   // ==================== EMPLOYEE PROFILES ====================
 
-  // Get all employee profiles (Admin/HR)
   getEmployees: (params = '') => apiService.request(`/employees${params}`),
 
-  // Get single employee profile
   getEmployee: (id) => apiService.request(`/employees/${id}`),
 
-  // Get my profile (Current logged-in user)
   getMyProfile: () => apiService.request('/employees/myProfile'),
 
-  // Create employee profile (Admin/HR)
   createEmployee: (data) =>
     apiService.request('/employees', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  // Update employee profile (Admin/HR)
   updateEmployee: (id, data) =>
     apiService.request(`/employees/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
-  // Delete employee profile (Admin/HR)
   deleteEmployee: (id) => apiService.request(`/employees/${id}`, { method: 'DELETE' }),
 
   // ==================== DEPARTMENTS ====================
 
-  // Get all departments
   getDepartments: (params = '') => apiService.request(`/departments${params}`),
 
-  // Get single department
   getDepartment: (id) => apiService.request(`/departments/${id}`),
 
-  // Get my team (Same department employees)
   getMyTeam: () => apiService.request('/departments/myTeam'),
 
-  // Create department (Admin/HR)
+  getMyDepartment: () => apiService.request('/departments/myDepartment'),
+
   createDepartment: (data) =>
     apiService.request('/departments', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  // Update department (Admin/HR)
   updateDepartment: (id, data) =>
     apiService.request(`/departments/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
-  // Delete department (Admin/HR)
   deleteDepartment: (id) => apiService.request(`/departments/${id}`, { method: 'DELETE' }),
 
   // ==================== PAYROLL ====================
 
-  // Get all payrolls (Admin/HR)
-  getPayrolls: (params = '') => apiService.request(`/payrolls${params}`),
+  getPayrolls: (params = '?sort=-year,-month') => apiService.request(`/payrolls${params}`),
 
-  // Get single payroll (Admin/HR)
   getPayroll: (id) => apiService.request(`/payrolls/${id}`),
 
-  // Get my payrolls (Current logged-in employee)
-  getMyPayrolls: (params = '') => apiService.request(`/payrolls/my-payrolls${params}`),
+  getMyPayrolls: (params) =>
+    apiService.request(`/payrolls/my-payrolls${params}`).then((response) => {
+      return {
+        data: {
+          payrolls: response.data?.payrolls || response.data?.doc || [],
+          doc: response.data?.payrolls || response.data?.doc || [],
+        },
+      };
+    }),
+  getMyPayrollsStats: () => apiService.request(`/payrolls/my-payrolls-stats`),
 
-  // Create payroll (Admin/HR)
   createPayroll: (data) =>
     apiService.request('/payrolls', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
-  // Update payroll (Admin/HR)
   updatePayroll: (id, data) =>
     apiService.request(`/payrolls/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
-  // Delete payroll (Admin/HR)
   deletePayroll: (id) => apiService.request(`/payrolls/${id}`, { method: 'DELETE' }),
 
   // ==================== AUDIT LOGS ====================
 
-  // Get all audit logs (Admin only)
   getAuditLogs: (params = '?sort=-timestamp') => apiService.request(`/audits${params}`),
 
-  // Get single audit log (Admin only)
   getAuditLog: (id) => apiService.request(`/audits/${id}`),
 
   // ==================== COMPANY STATS ====================
 
-  // Get company statistics (Admin/HR)
   getStats: () => apiService.request('/company/company-states'),
 
   // ==================== HELPER METHODS ====================
 
-  // Build query string from params object
   buildQueryString: (params) => {
     if (!params || Object.keys(params).length === 0) return '';
     const query = new URLSearchParams();
@@ -228,7 +242,6 @@ export const apiService = {
     return `?${query.toString()}`;
   },
 
-  // Upload file helper
   uploadFile: async (endpoint, formData) => {
     const token = localStorage.getItem('token');
     try {
@@ -251,35 +264,6 @@ export const apiService = {
       throw error;
     }
   },
-};
-
-// Export commonly used query builders
-export const queryBuilders = {
-  // Pagination
-  pagination: (page = 1, limit = 10) => ({ page, limit }),
-
-  // Sorting
-  sort: (field, order = 'asc') => ({ sort: order === 'desc' ? `-${field}` : field }),
-
-  // Filtering
-  filter: (filters) => filters,
-
-  // Field selection
-  fields: (fieldArray) => ({ fields: fieldArray.join(',') }),
-
-  // Date range
-  dateRange: (startDate, endDate) => ({
-    createdAt: { gte: startDate, lte: endDate },
-  }),
-
-  // Search by role
-  roleFilter: (role) => ({ role }),
-
-  // Search by department
-  departmentFilter: (departmentId) => ({ department: departmentId }),
-
-  // Month/Year filter for payroll
-  payrollPeriod: (month, year) => ({ month, year }),
 };
 
 export default apiService;

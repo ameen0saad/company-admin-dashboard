@@ -62,7 +62,7 @@ payrollSchema.pre('save', async function (next) {
   this.netPay = empProfile.salary + this.bonus - this.deductions;
   next();
 });
-payrollSchema.pre('findOne', function (next) {
+payrollSchema.pre(/^findOne/, function (next) {
   this.populate([
     {
       path: 'createdBy',
@@ -72,9 +72,13 @@ payrollSchema.pre('findOne', function (next) {
       path: 'updatedBy',
       select: 'name email role',
     },
+  ]);
+  next();
+});
+payrollSchema.pre(/^find/, function (next) {
+  this.populate([
     {
       path: 'employeeProfileId',
-      select: 'name salary',
     },
   ]);
   next();

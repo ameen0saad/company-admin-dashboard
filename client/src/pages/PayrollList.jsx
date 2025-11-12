@@ -50,6 +50,17 @@ export default function PayrollList() {
     }
   };
 
+  // New function to fetch payroll details by ID
+  const fetchPayrollDetails = async (payrollId) => {
+    try {
+      const response = await apiService.getPayroll(payrollId);
+      return response.data.doc;
+    } catch (error) {
+      console.error('Failed to fetch payroll details:', error);
+      throw error;
+    }
+  };
+
   const applyFilters = () => {
     let filtered = payrolls;
 
@@ -82,10 +93,21 @@ export default function PayrollList() {
     setIsModalOpen(true);
   };
 
-  const handleOpenViewModal = (payroll) => {
-    setViewingPayroll(payroll);
-    setEditingPayroll(null);
-    setIsModalOpen(true);
+  const handleOpenViewModal = async (payroll) => {
+    try {
+      // Fetch detailed payroll information including creator details
+      const payrollDetails = await fetchPayrollDetails(payroll._id);
+      setViewingPayroll(payrollDetails);
+      setEditingPayroll(null);
+      setIsModalOpen(true);
+    } catch (error) {
+      console.error('Failed to load payroll details:', error);
+      showToast('Failed to load payroll details', 'error');
+      // Fallback to basic payroll data if detailed fetch fails
+      setViewingPayroll(payroll);
+      setEditingPayroll(null);
+      setIsModalOpen(true);
+    }
   };
 
   const handleCloseModal = () => {
@@ -137,6 +159,25 @@ export default function PayrollList() {
   };
 
   const canManage = user?.role === 'admin' || user?.role === 'hr';
+
+  // Helper function to get creator information
+  const getCreatorInfo = (payroll) => {
+    // If payroll has populated createdBy with user details
+    if (payroll.createdBy && typeof payroll.createdBy === 'object') {
+      return {
+        name: payroll.createdBy.name || 'N/A',
+        email: payroll.createdBy.email || 'N/A',
+        role: payroll.createdBy.role || 'N/A',
+      };
+    }
+
+    // If createdBy is just an ID or string (fallback)
+    return {
+      name: 'Unknown',
+      email: 'N/A',
+      role: 'N/A',
+    };
+  };
 
   return (
     <div className="space-y-6">
@@ -332,10 +373,11 @@ export default function PayrollList() {
           viewingPayroll ? 'Payroll Details' : editingPayroll ? 'Edit Payroll' : 'Create Payroll'
         }
         onClose={handleCloseModal}
-        maxWidth="max-w-lg"
+        maxWidth="max-w-2xl" // Increased width to accommodate creator info
       >
         {viewingPayroll ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Period and Basic Info */}
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-600 uppercase font-semibold">Period</p>
@@ -346,13 +388,20 @@ export default function PayrollList() {
               <div>
                 <p className="text-xs text-gray-600 uppercase font-semibold">Employee</p>
                 <p className="text-sm font-medium text-gray-900">
-                  {viewingPayroll.employeeProfileId?.employeeId?.name}
+                  {viewingPayroll.employeeProfileId?.employeeId?.name || 'N/A'}
+                </p>
+                <p className="text-xs text-gray-600">
+                  {viewingPayroll.employeeProfileId?.employeeId?.email || 'N/A'}
                 </p>
               </div>
+            </div>
+
+            {/* Salary Breakdown */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-gray-600 uppercase font-semibold">Base Salary</p>
                 <p className="text-sm font-medium text-gray-900">
-                  ${viewingPayroll.employeeProfileId?.salary?.toLocaleString()}
+                  ${viewingPayroll.employeeProfileId?.salary?.toLocaleString() || '0'}
                 </p>
               </div>
               <div>
@@ -369,17 +418,52 @@ export default function PayrollList() {
               </div>
               <div>
                 <p className="text-xs text-gray-600 uppercase font-semibold">Net Pay</p>
-                <p className="text-sm font-bold text-blue-600">
-                  ${viewingPayroll.netPay?.toLocaleString()}
+                <p className="text-lg font-bold text-blue-600">
+                  ${viewingPayroll.netPay?.toLocaleString() || '0'}
                 </p>
               </div>
             </div>
+
+            {/* Payment Date */}
             <div className="pt-4 border-t border-gray-200">
               <p className="text-xs text-gray-600 uppercase font-semibold mb-1">Payment Date</p>
               <p className="text-sm text-gray-900">
                 {new Date(viewingPayroll.paymentDate).toLocaleDateString()}
               </p>
             </div>
+
+            {/* Creator Information */}
+            <div className="pt-4 border-t border-gray-200">
+              <p className="text-xs text-gray-600 uppercase font-semibold mb-3">Created By</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Name</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {getCreatorInfo(viewingPayroll).name}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Email</p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {getCreatorInfo(viewingPayroll).email}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 mb-1">Role</p>
+                  <p className="text-sm font-medium text-gray-900 capitalize">
+                    {getCreatorInfo(viewingPayroll).role}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Notes if any */}
+            {viewingPayroll.notes && (
+              <div className="pt-4 border-t border-gray-200">
+                <p className="text-xs text-gray-600 uppercase font-semibold mb-1">Notes</p>
+                <p className="text-sm text-gray-900">{viewingPayroll.notes}</p>
+              </div>
+            )}
           </div>
         ) : (
           <PayrollForm payroll={editingPayroll} onSubmit={handleSubmit} isLoading={isSaving} />

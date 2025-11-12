@@ -40,9 +40,9 @@ export default function DepartmentDetails({ departmentId, onBack }) {
     employeeId: '',
     salary: '',
     phone: '',
-    joiningDate: '',
-    address: '',
     dateOfBirth: '',
+    joiningDate: new Date().toISOString().split('T')[0],
+    address: '',
   });
 
   const [payrollData, setPayrollData] = useState({
@@ -154,9 +154,9 @@ export default function DepartmentDetails({ departmentId, onBack }) {
         employeeId: '',
         salary: '',
         phone: '',
-        joiningDate: '',
-        address: '',
         dateOfBirth: '',
+        joiningDate: new Date().toISOString().split('T')[0],
+        address: '',
       });
 
       // Reload department data
@@ -446,9 +446,19 @@ export default function DepartmentDetails({ departmentId, onBack }) {
                       <div className="flex items-start gap-4">
                         {/* Avatar */}
                         <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-bold">
-                            {emp.employeeId?.name?.charAt(0) || '?'}
-                          </span>
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                            {emp.employeeId?.photo && emp.employeeId?.photo.startsWith('u') ? (
+                              <img
+                                src={`http://127.0.0.1:3000/img/users/${emp.employeeId?.photo}`}
+                                alt={emp.employeeId?.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-white font-semibold">
+                                {emp.employeeId?.name?.charAt(0) || '?'}
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         {/* Employee Info */}
@@ -506,13 +516,22 @@ export default function DepartmentDetails({ departmentId, onBack }) {
                               <span>{emp.phone || 'N/A'}</span>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                            <div className="grid grid-cols-3 gap-4 pt-2 border-t border-gray-100">
                               <div>
                                 <p className="text-xs text-gray-600 font-semibold uppercase">
                                   Salary
                                 </p>
                                 <p className="text-sm font-medium text-gray-900 mt-1">
                                   ${emp.salary?.toLocaleString() || '0'}
+                                </p>
+                              </div>
+
+                              <div>
+                                <p className="text-xs text-gray-600 font-semibold uppercase">
+                                  Date of Birth
+                                </p>
+                                <p className="text-sm text-gray-900 mt-1">
+                                  {formatDate(emp.dateOfBirth)}
                                 </p>
                               </div>
 
@@ -594,6 +613,19 @@ export default function DepartmentDetails({ departmentId, onBack }) {
               onChange={(e) => setNewEmployeeData((prev) => ({ ...prev, phone: e.target.value }))}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Enter phone number"
+            />
+          </div>
+
+          {/* Date of Birth Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+            <input
+              type="date"
+              value={newEmployeeData.dateOfBirth}
+              onChange={(e) =>
+                setNewEmployeeData((prev) => ({ ...prev, dateOfBirth: e.target.value }))
+              }
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 

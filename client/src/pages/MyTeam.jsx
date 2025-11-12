@@ -22,6 +22,7 @@ export default function MyTeam() {
       setLoading(true);
       setError(null);
       const response = await apiService.getMyTeam();
+      console.log(response);
       setTeam(response.data.myTeam || []);
     } catch (err) {
       console.error('Failed to load team:', err);
@@ -122,10 +123,18 @@ export default function MyTeam() {
             >
               {/* Header with Avatar */}
               <div className="flex items-start justify-between mb-4">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-lg">
-                    {member.employeeId?.name?.charAt(0) || '?'}
-                  </span>
+                <div className="w-14 h-14 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                  {member.employeeId.photo.startsWith('u') ? (
+                    <img
+                      src={`http://127.0.0.1:3000/img/users/${member.employeeId?.photo}`}
+                      alt={member.employeeId?.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-white font-bold text-lg">
+                      {member.employeeId?.name?.charAt(0) || '?'}
+                    </span>
+                  )}
                 </div>
                 <span
                   className={`px-2 py-1 text-xs font-medium rounded capitalize ${
@@ -179,15 +188,6 @@ export default function MyTeam() {
 
               {/* Employment Details */}
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">
-                    Salary
-                  </p>
-                  <p className="text-sm font-bold text-gray-900">
-                    ${member.salary?.toLocaleString() || '0'}
-                  </p>
-                </div>
-
                 <div>
                   <p className="text-xs text-gray-600 uppercase tracking-wide font-semibold mb-1">
                     Joined
@@ -262,12 +262,6 @@ export default function MyTeam() {
                 <div>
                   <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Department</p>
                   <p className="text-sm text-gray-900">{viewingMember.department?.name || 'N/A'}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Salary</p>
-                  <p className="text-sm font-bold text-gray-900">
-                    ${viewingMember.salary?.toLocaleString() || '0'}
-                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Joining Date</p>

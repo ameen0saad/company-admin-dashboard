@@ -5,7 +5,6 @@ import * as authController from '../controller/authController.js';
 
 const router = express.Router();
 router.route('/myTeam').get(authController.protect, departmentController.getMyTeam);
-router.route('/myDepartment').get(authController.protect, departmentController.getMyDepartment);
 
 router
   .route('/')

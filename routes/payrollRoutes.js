@@ -24,13 +24,13 @@ router
 router
   .route('/my-payrolls')
   .get(employeeProfileController.requireEmployeeProfile, payrollController.getMyPayrolls);
+
+router
+  .route('/my-payrolls-stats')
+  .get(employeeProfileController.requireEmployeeProfile, payrollController.getMyPayrollsStats);
 router
   .route('/:id')
-  .get(
-    authController.restrictTo('admin', 'hr'),
-    payrollController.preventHrSelfModification,
-    payrollController.getPayroll
-  )
+  .get(authController.restrictTo('admin', 'hr'), payrollController.getPayroll)
   .patch(
     authController.restrictTo('admin', 'hr'),
     payrollController.preventHrSelfModification,

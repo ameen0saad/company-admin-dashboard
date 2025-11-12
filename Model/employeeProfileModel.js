@@ -82,14 +82,32 @@ employeeProfileSchema.post('save', async function () {
   });
 });
 
+employeeProfileSchema.pre(['findOneAndUpdate', 'findOneAndDelete'], async function (next) {
+  const doc = await this.model.findOne(this.getQuery());
+  this.oldDoc = doc;
+  next();
+});
+
 employeeProfileSchema.post(['findOneAndUpdate', 'findOneAndDelete'], async function (doc) {
   if (!doc) return;
+
   const employeeCount = await EmployeeProfile.countDocuments({
     department: doc.department,
   });
   await Department.findByIdAndUpdate(doc.department, {
     employeeCount,
   });
+
+  if (this.oldDoc.department._id !== doc.department._id) {
+    const oldDptCount = await EmployeeProfile.countDocuments({
+      department: this.oldDoc.department._id,
+    });
+    const dept = await Department.findByIdAndUpdate(
+      this.oldDoc.department._id,
+      { employeeCount: oldDptCount },
+      { new: true, runValidators: true }
+    );
+  }
 });
 
 employeeProfileSchema.virtual('Payrolls', {

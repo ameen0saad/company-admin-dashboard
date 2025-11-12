@@ -124,7 +124,7 @@ export default function UserManagement() {
 
     try {
       setDeleting(true);
-      await apiService.updateUser(deleteConfirm.userId, { active: false });
+      await apiService.deleteUser(deleteConfirm.userId, { active: false });
       setUsers(users.map((u) => (u._id === deleteConfirm.userId ? { ...u, active: false } : u)));
       setDeleteConfirm({ isOpen: false, userId: null });
       showToast('User deactivated successfully', 'success');
