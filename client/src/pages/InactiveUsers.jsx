@@ -319,7 +319,7 @@ export default function InactiveUsers() {
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                           {user.photo && user.photo.startsWith('u') ? (
                             <img
-                              src={`http://127.0.0.1:3000/img/users/${user.photo}`}
+                              src={`https://company-admin-dashboard.vercel.app/img/users/${user.photo}`}
                               alt={user.name}
                               className="w-full h-full object-cover"
                             />
@@ -414,7 +414,7 @@ export default function InactiveUsers() {
               <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                 {selectedUser.photo && selectedUser.photo.startsWith('u') ? (
                   <img
-                    src={`http://127.0.0.1:3000/img/users/${selectedUser.photo}`}
+                    src={`https://company-admin-dashboard.vercel.app/img/users/${selectedUser.photo}`}
                     alt={selectedUser.name}
                     className="w-full h-full object-cover"
                   />

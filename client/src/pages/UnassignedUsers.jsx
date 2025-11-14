@@ -185,7 +185,7 @@ export default function UnassignedUsers() {
                         <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                           {u.photo && u.photo.startsWith('u') ? (
                             <img
-                              src={`http://127.0.0.1:3000/img/users/${u.photo}`}
+                              src={`https://company-admin-dashboard.vercel.app/img/users/${u.photo}`}
                               alt={u.name}
                               className="w-full h-full object-cover"
                             />

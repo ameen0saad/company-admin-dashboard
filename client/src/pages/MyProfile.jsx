@@ -86,7 +86,7 @@ export default function MyProfile() {
             <div className="w-20 h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 text-white">
               {user.photo.startsWith('u') ? (
                 <img
-                  src={`http://127.0.0.1:3000/img/users/${user?.photo}`}
+                  src={`https://company-admin-dashboard.vercel.app/img/users/${user?.photo}`}
                   alt={user?.name}
                   className="w-full h-full object-cover"
                 />

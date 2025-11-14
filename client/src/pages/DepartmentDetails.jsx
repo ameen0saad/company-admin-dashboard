@@ -449,7 +449,7 @@ export default function DepartmentDetails({ departmentId, onBack }) {
                           <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
                             {emp.employeeId?.photo && emp.employeeId?.photo.startsWith('u') ? (
                               <img
-                                src={`http://127.0.0.1:3000/img/users/${emp.employeeId?.photo}`}
+                                src={`https://company-admin-dashboard.vercel.app/img/users/${emp.employeeId?.photo}`}
                                 alt={emp.employeeId?.name}
                                 className="w-full h-full object-cover"
                               />
