@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://127.0.0.1:3000/api/v1';
+const API_BASE_URL = 'https://company-admin-dashboard.vercel.app/api/v1';
 
 export const apiService = {
   async request(endpoint, options = {}) {

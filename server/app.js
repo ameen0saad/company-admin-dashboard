@@ -19,6 +19,9 @@ import AppError from './utils/appError.js';
 import { __dirname } from './path.js';
 
 const app = express();
+
+app.set('trust proxy', 1);
+
 app.use(
   cors({
     origin: process.env.CLIENT_URL,
