@@ -65,4 +65,8 @@ app.all('*split', (req, res, next) => {
 
 app.use(globalErrorHandler);
 
+// TODO : Uncomment for this block of code before run the server
+// app.listen(port, () => {
+//   console.log(`Server is running on port ${port}`);
+// });
 export default app;
