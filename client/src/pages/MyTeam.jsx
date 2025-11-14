@@ -22,7 +22,6 @@ export default function MyTeam() {
       setLoading(true);
       setError(null);
       const response = await apiService.getMyTeam();
-      console.log(response);
       setTeam(response.data.myTeam || []);
     } catch (err) {
       console.error('Failed to load team:', err);

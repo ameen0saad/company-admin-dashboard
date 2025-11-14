@@ -40,7 +40,6 @@ export default function EmployeeHomepage() {
 
       // Load employee profile
       const profileResponse = await apiService.getMyProfile();
-      console.log(profileResponse);
       if (profileResponse.data.employeeProfile) {
         setEmployee(profileResponse.data.employeeProfile);
       }

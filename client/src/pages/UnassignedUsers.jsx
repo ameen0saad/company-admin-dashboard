@@ -78,7 +78,7 @@ export default function UnassignedUsers() {
         ...formData,
         employeeId: viewingUser._id,
       };
-      console.log(updatedFormData);
+
       await apiService.createEmployee(updatedFormData);
       showToast('Employee profile created successfully', 'success');
       loadUsers();
